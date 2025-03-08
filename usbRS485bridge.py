@@ -1,9 +1,30 @@
 # usbRS485bridge
-import sys
+#import sys
 import time
 import port
-import os
+#import os
 import threading
+
+#
+# interface layer with a "waveshare" industrial USB<-->RS485 device
+# https://www.amazon.com/dp/B081MB6PN2
+#
+#
+#	+-------+
+#	|RasPi	|
+#	|	|>>[USB-RS485]--+-------[RS485Device,address xx]
+#	|	|		|
+#	+-------+		|
+#				+-------[RS485Device,address yy]
+#				|
+#				|
+#				+-------[RS485-232Bridge,address zz]----[Instrument RS232]
+#				|
+#				|
+#				+-------[RS485-GPIBBridge,address xy]---[Instrument GPIB address aa]
+#				|
+#				|
+#				+ up to 16 RS485 devices
 
 bridge = None
 
@@ -136,7 +157,7 @@ def readDevice():
 	global bridge
 
 	timeOut=5
-	delay=0.1
+	delay=0.2
 
 	READ_BUFFER = 1
 	rx_byte_arr=[]

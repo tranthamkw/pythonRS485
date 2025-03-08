@@ -1,13 +1,9 @@
 #mcamain.py
 import sys
 import time
-#import serial
-#import port
 import re
 import argparse
 import os
-#import threading
-#from datetime import datetime
 
 import usbRS485bridge
 
