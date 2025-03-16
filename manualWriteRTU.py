@@ -20,8 +20,8 @@ import usbRS485bridge
 
 parser = argparse.ArgumentParser(
 	prog='manualWriteRTU',
-	description='Manually send data to RS485 device <address>, register <register>',
-	epilog='text at the bottom')
+	description='Manually send data to RS485 device <address>, register <register>/nYOU MUST KNOW WHAT YOU,RE DOING!',
+	epilog='e.g. python manualWriteRTU.py a3 06 123')
 parser.add_argument('address', type=str, help='The address in hex. e.g. A3')
 parser.add_argument('register', type=str, help='The register in hex. e.g. 03')
 parser.add_argument('data', type=int, help='data to send')

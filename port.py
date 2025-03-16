@@ -52,13 +52,15 @@ def getdevicebyserialnumber(sn):
 
 
 def connectdevice(sn=None):
+    nanoport=None
     if sn is None and len(getallports()) > 0:
-        nanoport = getallports()[0].device
-    else:
-        nanoport = getdevicebyserialnumber(sn)
+        ports = getallports()[0]
+        nanoport = ports.device
+#    else:
+#        nanoport = getdevicebyserialnumber(sn)
     if nanoport is None:
-        print("!!! Error. Could not found nano connected.")
+        print("!!! Error. Could not find FTDI device: WaveShare USB<->RS485 device.")
         exit(0)
-    print("port {} speed {}".format(nanoport, port_speed))
+    print("Connected to:\n\tport {}\n\tspeed {}\n\tmanufacturer {}\n\tserial number {}".format(nanoport, port_speed,ports.manufacturer,ports.serial_number))
     tty = serial.Serial(nanoport, baudrate=port_speed, bytesize=8, parity='N', stopbits=1, timeout=0.1)
     return tty

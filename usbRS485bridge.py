@@ -1,9 +1,17 @@
 # usbRS485bridge
-#import sys
+import sys
 import time
 import port
+import serial
 #import os
 import threading
+
+TIMEOUT=30
+BASEREGANLG= 0x0D0D
+BASEREGSERVO= 0x0A0A
+BASEREG485BRIDGE232= 0x0C0C
+BASEREGSTEPMTR= 0x0B0B
+BASEREGFN= 0x00F0
 
 #
 # interface layer with a "waveshare" industrial USB<-->RS485 device
@@ -12,19 +20,19 @@ import threading
 #
 #	+-------+
 #	|RasPi	|
-#	|	|>>[USB-RS485]--+-------[RS485Device,address xx]
-#	|	|		|
-#	+-------+		|
-#				+-------[RS485Device,address yy]
-#				|
-#				|
-#				+-------[RS485-232Bridge,address zz]----[Instrument RS232]
-#				|
-#				|
-#				+-------[RS485-GPIBBridge,address xy]---[Instrument GPIB address aa]
-#				|
-#				|
-#				+ up to 16 RS485 devices
+#	|	|>>[WaveShare USB-RS485]--------+-------[RS485Device,address xx]
+#	|	|				|
+#	+-------+				|
+#						+-------[RS485Device,address yy]
+#						|
+#						|
+#						+-------[RS485-232Bridge,address zz]----[Instrument RS232]
+#						|
+#						|
+#						+-------[RS485-GPIBBridge,address xy]---[Instrument GPIB address aa]
+#						|
+#						|
+#						+ up to 16 RS485 devices
 
 bridge = None
 
@@ -91,8 +99,11 @@ def validateRTU(buff):
 
 def start(sn=None):
 	global bridge
-	bridge = port.connectdevice(sn)
-	if not bridge:
+	try:
+		with threading.Lock():
+			bridge = port.connectdevice(sn)
+	except serial.SerialException as e:
+		print("SerialException:%s\n",e)
 		print("could not connect to USB-RS485 bridge")
 		sys.exit(0)
 
@@ -114,13 +125,12 @@ def write_Modbus_RTU(address, reg, writedata):
 	cmd=[]
 	temp=0
 
-	cmd.append(address&0x00FF)
-	cmd.append(0x06)
-
-	cmd.append((reg&0xFF00)>>8) # //MSB which register
-	cmd.append(reg&0x00FF)  # //LSB which register 
-	cmd.append((writedata & 0xFF00)>>8) #// the next two bytes are the MSB and
-	cmd.append(writedata & 0x00FF)  # // and LSB of the data to send
+	cmd.append(address&0x00FF)  	#0
+	cmd.append(0x06)		#1
+	cmd.append((reg&0xFF00)>>8) #2 //MSB which register
+	cmd.append(reg&0x00FF)  #3 //LSB which register 
+	cmd.append((writedata & 0xFF00)>>8) #4// the next two bytes are the MSB and
+	cmd.append(writedata & 0x00FF)  #5 // and LSB of the data to send
 	temp=crc16bytes(0xFFFF, cmd)
 	cmd.append(temp&0x00FF)  #  //before the LSByte
 	cmd.append((temp&0xFF00)>>8)  #  //ensures that the MSByte is sent first as per Modbus
@@ -130,7 +140,6 @@ def write_Modbus_RTU(address, reg, writedata):
 #	printmybyte(cmd)
 
 	bridge.write(cmd)
-	time.sleep(0.1)
 	returndata=readDevice()
 	z=-1 # // initialize an error variable.
 
@@ -156,19 +165,19 @@ def write_Modbus_RTU(address, reg, writedata):
 def readDevice():
 	global bridge
 
-	timeOut=5
-	delay=0.2
+	#timeOut=5
+	delay=0.25
 
 	READ_BUFFER = 1
 	rx_byte_arr=[]
 	t=0
 	time.sleep(delay)
-	while not((t>timeOut)or(bridge.in_waiting> 0)):
+	while not((t>TIMEOUT)or(bridge.in_waiting> 0)):
 		time.sleep(delay)
 		t+=1
-		sys.stdout.write(".")
-		sys.stdout.flush()
-	if (t>timeOut):
+#		sys.stdout.write(".")
+#		sys.stdout.flush()
+	if (t>TIMEOUT):
 		return rx_byte_arr
 	READ_BUFFER = bridge.in_waiting
 	try:
@@ -180,6 +189,68 @@ def readDevice():
 #	sys.stdout.write("Rx:  ")
 #	printmybyte(rx_byte_arr)
 	return rx_byte_arr
+
+
+def write_Bridge_StringRTU(address, writestring):
+	global bridge
+# Writes an ascii command to a 485-232/GPIB bridge device. this routine DOES append a CR to data,
+# which is a very common terminator character with RS232 ascii communications.
+# 
+# The bridge device is addressed, and data is written to a register.  The bridge strips this, and the CRC
+# portions before passing on to the writestring to RS232/GPIB.
+
+	cmd=[]
+	temp=0
+	reg=BASEREG485BRIDGE232+32
+#	reg=3084+32
+	cmd.append(address&0x00FF)  	#0
+	cmd.append(0x06)		#1
+	cmd.append((reg&0xFF00)>>8) #2 //MSB which register
+	cmd.append(reg&0x00FF)  #3 //LSB which register 
+
+	for j in range (len(writestring)):
+		cmd.append(ord(writestring[j]) & 0x00FF)  # append the ascii number associated with each character of the string
+
+	cmd.append(13) #append a CR
+#	cmd.append(13) #TODO do we need two of them?
+
+	temp=crc16bytes(0xFFFF, cmd) #calculate the CRC bytes
+
+	cmd.append(temp&0x00FF)  #  //before the LSByte
+	cmd.append((temp&0xFF00)>>8)  #  //ensures that the MSByte is sent first as per Modbus
+# debugging
+#	sys.stdout.write("Tx:")
+#	printmybyte(cmd)
+
+	bridge.write(cmd)
+	rtnData=readDevice()
+
+#	sys.stdout.write("Rx:")
+#	printmybyte(rtnData)
+
+	status=1
+	returnData=[]
+	if(len(rtnData)>0):
+		if not (len(rtnData)==rtnData[2]+5):
+			print("Unexpected number of return bytes")
+			print("rtnData[2]= {}".format(rtnData[2]))
+			print("len(rtnData)= {}".format(len(rtnData)))
+
+		if(validateRTU(rtnData)):
+			if (not (rtnData[1] & 0x80)):
+				returnData=rtnData[3:-2]
+				status=0
+			else:
+				status=rtnData[2]<<8|rtnData[3]
+				print("writeRS232Bridge process returned error ")
+		else:
+			print("CRC bytes in response invalid")
+	else:
+		status=1;
+		print("WriteBridge: No Response from bridge at RS485 address {}".format(hex(address)))
+
+	return status,returnData
+
 
 
 def read_Modbus_RTU(address,reg):
@@ -209,7 +280,6 @@ def read_Modbus_RTU(address,reg):
 #	printmybyte(cmd)
 
 	bridge.write(cmd)
-	time.sleep(0.1)
 	returndata=readDevice()
 
 	z=-1	# //my way of recording errors
@@ -221,29 +291,26 @@ def read_Modbus_RTU(address,reg):
 				if(returndata[1] & 0x80): #  an error occured
 					z=(returndata[2]<<8)|returndata[3] #the nature of the error is returned here
 					print("error returnded")
-				else:
+				else: # all good(see below)
 					tempint=returndata[3:-2]
-#					for j in range(3,len(returndata)-2):
-#						tempint+=(returndata[j] << (8*(j-3)))
 					z=0;
 			else:
-				print("Read RTU: unexpected machine responded")
+				print("\nRead RTU: unexpected machine responded")
 		else:
-			print("Invalid CRC")
+			print("\nRead RTU: Invalid CRC")
 	else:
-		print("no response from device at address {}".format(hex(address)))
+		print("\nRead RTU no response from device at address {}".format(hex(address)))
 
 	return z,tempint
 
-"""/*All good lets do something with the data.
-
-The return structure looks like 
+"""
+All good lets do something with the data.
+The return structure looks like
 byte0: echo address
 byte1: echo command. If command is 03, then 03 is expected. However, if there is an error it will return 83
-byte2: number of bytes of data to follow: n. 
-byte3: data byte 0.... 
+byte2: number of bytes of data to follow: n
+byte3: data byte 0....
 byte3+n: data byte n-1
 byte 3+n+1: LSB of CRC
 byte 3+n+2: MSB of CRC
-
 """
