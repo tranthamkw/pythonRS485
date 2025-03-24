@@ -9,7 +9,13 @@ import os
 
 import usbRS485bridge
 
+# devices register definitions.
 
+BASEREGANLG= 0x0D0D
+BASEREGSERVO= 0x0A0A
+BASEREG485BRIDGE232= 0x0C0C
+BASEREGSTEPMTR= 0x0B0B
+BASEREGFN= 0x00F0
 
 #															#
 # interface layer between main, or instrument layers, with usb/RS485 bridge#
@@ -53,7 +59,22 @@ def changeAddress(old,new):
 
 def writeRS232(rs485address, outstring):
 
-	y,returndata = usbRS485bridge.write_Bridge_StringRTU(rs485address, outstring)
+	y,returndata = usbRS485bridge.write_Bridge_StringRTU(rs485address,BASEREG485BRIDGE232+32,0,outstring)
+	if (y==0):
+		try:
+			returnstring = returndata.decode('utf-8')
+		except:
+			print("exception decode utf-8. Returndata  {}".format(returndata))
+			returnstring="0.0"
+	else:
+		returnstring="0.0"
+
+	return returnstring
+
+
+def writeGPIB(rs485address,gpib, outstring):
+
+	y,returndata = usbRS485bridge.write_Bridge_StringRTU(rs485address,BASEREG485BRIDGE232+32,gpib,outstring)
 	if (y==0):
 		try:
 			returnstring = returndata.decode('utf-8')

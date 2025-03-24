@@ -7,11 +7,6 @@ import serial
 import threading
 
 TIMEOUT=30
-BASEREGANLG= 0x0D0D
-BASEREGSERVO= 0x0A0A
-BASEREG485BRIDGE232= 0x0C0C
-BASEREGSTEPMTR= 0x0B0B
-BASEREGFN= 0x00F0
 
 #
 # interface layer with a "waveshare" industrial USB<-->RS485 device
@@ -191,7 +186,7 @@ def readDevice():
 	return rx_byte_arr
 
 
-def write_Bridge_StringRTU(address, writestring):
+def write_Bridge_StringRTU(address,reg, gpib, writestring):
 	global bridge
 # Writes an ascii command to a 485-232/GPIB bridge device. this routine DOES append a CR to data,
 # which is a very common terminator character with RS232 ascii communications.
@@ -201,18 +196,21 @@ def write_Bridge_StringRTU(address, writestring):
 
 	cmd=[]
 	temp=0
-	reg=BASEREG485BRIDGE232+32
+#	reg=BASEREG485BRIDGE232+32
 #	reg=3084+32
 	cmd.append(address&0x00FF)  	#0
 	cmd.append(0x06)		#1
 	cmd.append((reg&0xFF00)>>8) #2 //MSB which register
 	cmd.append(reg&0x00FF)  #3 //LSB which register 
 
+	if gpib>0:  #RS232 is not addressable. GPIB is. for GPIB bridge devices, the GPIB address
+			# is cmd[4]
+		cmd.append(gpib&0x00FF)
+
 	for j in range (len(writestring)):
 		cmd.append(ord(writestring[j]) & 0x00FF)  # append the ascii number associated with each character of the string
 
-	cmd.append(13) #append a CR
-#	cmd.append(13) #TODO do we need two of them?
+	cmd.append(13) #append a CR. maybe move this to device specific when the command string is built?
 
 	temp=crc16bytes(0xFFFF, cmd) #calculate the CRC bytes
 
