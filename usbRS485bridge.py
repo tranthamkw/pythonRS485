@@ -186,31 +186,25 @@ def readDevice():
 	return rx_byte_arr
 
 
-def write_Bridge_StringRTU(address,reg, gpib, writestring):
+def write_232_StringRTU(address,reg, writestring,terminator):
 	global bridge
-# Writes an ascii command to a 485-232/GPIB bridge device. this routine DOES append a CR to data,
+# Writes an ascii command to a 485-232 bridge device. this routine DOES append a CR to data,
 # which is a very common terminator character with RS232 ascii communications.
-# 
+#
 # The bridge device is addressed, and data is written to a register.  The bridge strips this, and the CRC
 # portions before passing on to the writestring to RS232/GPIB.
 
 	cmd=[]
 	temp=0
-#	reg=BASEREG485BRIDGE232+32
-#	reg=3084+32
 	cmd.append(address&0x00FF)  	#0
 	cmd.append(0x06)		#1
 	cmd.append((reg&0xFF00)>>8) #2 //MSB which register
 	cmd.append(reg&0x00FF)  #3 //LSB which register 
 
-	if gpib>0:  #RS232 is not addressable. GPIB is. for GPIB bridge devices, the GPIB address
-			# is cmd[4]
-		cmd.append(gpib&0x00FF)
-
 	for j in range (len(writestring)):
 		cmd.append(ord(writestring[j]) & 0x00FF)  # append the ascii number associated with each character of the string
 
-	cmd.append(13) #append a CR. maybe move this to device specific when the command string is built?
+	cmd.append(terminator & 0x00FF)
 
 	temp=crc16bytes(0xFFFF, cmd) #calculate the CRC bytes
 
@@ -249,6 +243,104 @@ def write_Bridge_StringRTU(address,reg, gpib, writestring):
 
 	return status,returnData
 
+def listen_GPIB_StringRTU(address,reg,gpib,terminator):
+	global bridge
+	cmd=[]
+	cmd.append(address&0x00FF)  	#0
+	cmd.append(0x03)		#1
+	cmd.append((reg&0xFF00)>>8) #2 //MSB which register
+	cmd.append(reg&0x00FF)  #3 //LSB which register 
+	cmd.append(gpib&0x00FF)
+# GPIB address.  The bridge will instruct this instrument to "talk".
+# then issue untalk to all devices afterwards.
+	cmd.append(terminator&0x00FF)
+# the terminator in the data string to know when to stop receiving. if terminator=0
+# then the bridge senses the EOI control line of the GPIB buss
+	temp=crc16bytes(0xFFFF, cmd) #calculate the CRC bytes
+
+	cmd.append(temp&0x00FF)  #  //before the LSByte
+	cmd.append((temp&0xFF00)>>8)  #  //ensures that the MSByte is sent first as per Modbus
+# debugging
+#	sys.stdout.write("Tx:")
+#	printmybyte(cmd)
+	bridge.write(cmd)
+	rtnData=readDevice()
+#	sys.stdout.write("Rx:")
+#	printmybyte(rtnData)
+
+	status=1
+	returnData=[]
+	if(len(rtnData)>0):
+		if not (len(rtnData)==rtnData[2]+5):
+			print("Unexpected number of return bytes")
+			print("rtnData[2]= {}".format(rtnData[2]))
+			print("len(rtnData)= {}".format(len(rtnData)))
+
+		if(validateRTU(rtnData)):
+			if (not (rtnData[1] & 0x80)):
+				returnData=rtnData[3:-2]
+				status=0
+			else:
+				status=rtnData[2]<<8|rtnData[3]
+				print("Listen GPIB process returned error ")
+		else:
+			print("CRC bytes in response invalid")
+	else:
+		status=1;
+		print("Listen GPIB: No Response from bridge at RS485 address {}".format(hex(address)))
+
+	return status,returnData
+
+
+def write_GPIB_StringRTU(address,reg,gpib, writestring,terminator):
+	global bridge
+# Writes an ascii command to a 485-GPIB bridge device. this routine DOES append a CR to data,
+# which is a very common terminator character with RS232 ascii communications.
+#
+# use this when a response is not expected from the instrument attached to the GPIB bus
+
+	cmd=[]
+	temp=0
+	cmd.append(address&0x00FF)  	#0
+	cmd.append(0x06)		#1
+	cmd.append((reg&0xFF00)>>8) #2 //MSB which register
+	cmd.append(reg&0x00FF)  #3 //LSB which register 
+	cmd.append(gpib&0x00FF)
+	for j in range (len(writestring)):
+		cmd.append(ord(writestring[j]) & 0x00FF)  # append the ascii number associated with each character of the string
+
+	cmd.append(terminator&0x00FF)
+
+	temp=crc16bytes(0xFFFF, cmd) #calculate the CRC bytes
+
+	cmd.append(temp&0x00FF)  #  //before the LSByte
+	cmd.append((temp&0xFF00)>>8)  #  //ensures that the MSByte is sent first as per Modbus
+# debugging
+#	sys.stdout.write("Tx:")
+#	printmybyte(cmd)
+
+	bridge.write(cmd)
+	returndata=readDevice()
+
+#	sys.stdout.write("Rx:")
+#	printmybyte(rtnData)
+	z=-1 # // initialize an error variable.
+
+	if len(returndata)>0:
+		if(validateRTU(returndata)):
+		# CRC valid.No transmission errors
+		#// let make sure no machine/interpretation  errors
+			if(cmd[0]==returndata[0]):   #  // then the corect machine responded
+				if (returndata[1] & 0x80): #  // then an  error
+					z=returndata[2] #  //in the event of an error this byte
+					# // is sent by the machine  explaining the nature of the error
+				else:
+					z=0 #  // no errors. you're golden.
+			else:
+				print("Unexpected machine responded")
+	else:
+		print("no response from device at address {}".format(hex(address)))
+	return z
 
 
 def read_Modbus_RTU(address,reg):
