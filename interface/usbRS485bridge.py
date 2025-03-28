@@ -323,7 +323,7 @@ def write_GPIB_StringRTU(address,reg,gpib, writestring,terminator):
 	returndata=readDevice()
 
 #	sys.stdout.write("Rx:")
-#	printmybyte(rtnData)
+#	printmybyte(returndata)
 	z=-1 # // initialize an error variable.
 
 	if len(returndata)>0:
