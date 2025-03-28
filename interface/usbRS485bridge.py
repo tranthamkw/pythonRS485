@@ -1,7 +1,7 @@
 # usbRS485bridge
 import sys
 import time
-import port
+import interface.port
 import serial
 #import os
 import threading
@@ -96,7 +96,7 @@ def start(sn=None):
 	global bridge
 	try:
 		with threading.Lock():
-			bridge = port.connectdevice(sn)
+			bridge = interface.port.connectdevice(sn)
 	except serial.SerialException as e:
 		print("SerialException:%s\n",e)
 		print("could not connect to USB-RS485 bridge")

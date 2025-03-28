@@ -10,7 +10,7 @@ import os
 #import threading
 #from datetime import datetime
 
-import rs485Devices
+import interface.rs485Devices
 
 #import globalVars
 
@@ -29,15 +29,15 @@ idstring=""
 args = parser.parse_args()
 address=int(args.address,16)
 
-rs485Devices.init()
+interface.rs485Devices.init()
 
 print("Requesting ID string from RS485 device {}".format(hex(address)))
-returnstring = rs485Devices.IDstring(address)
+returnstring = interface.rs485Devices.IDstring(address)
 
 print("ID string: {}".format(returnstring))
 
 print("stop")
-rs485Devices.stop()
+interface.rs485Devices.stop()
 
 
 os._exit(0)

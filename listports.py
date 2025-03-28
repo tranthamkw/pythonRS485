@@ -2,7 +2,7 @@
 #mcamain.py
 import sys
 import time
-import port
+import interface.port
 import re
 import os
 # lists all USB accessable devices.  This program should be run first to determine which 
@@ -23,7 +23,7 @@ inserted in the top of port.py as we will be connecing by serial
 
 """
 
-myports=port.getallportsastext()
+myports=interface.port.getallportsastext()
 
 
 os._exit(0)

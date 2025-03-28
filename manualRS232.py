@@ -5,7 +5,7 @@ import re
 import argparse
 import os
 
-import rs485Devices
+import interface.rs485Devices
 
 
 #															#
@@ -23,15 +23,15 @@ args = parser.parse_args()
 address=int(args.address,16)
 cmdstr=args.commandstring
 
-rs485Devices.init()
+interface.rs485Devices.init()
 
 #print("Command string: {}".format(cmdstr))
 
-returnstring=rs485Devices.writeRS232(address, cmdstr,0x0D)
+returnstring=interface.rs485Devices.writeRS232(address, cmdstr,0x0D)
 
 print(returnstring)
 
 print("OK")
-rs485Devices.stop()
+interface.rs485Devices.stop()
 
 os._exit(0)

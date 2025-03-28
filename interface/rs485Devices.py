@@ -7,7 +7,7 @@ import re
 import argparse
 import os
 
-import usbRS485bridge
+import interface.usbRS485bridge
 
 # devices register definitions.
 
@@ -32,15 +32,15 @@ BASEREGFN= 0x00F0
 
 # called at the start of a main 
 def init():
-	usbRS485bridge.start()
+	interface.usbRS485bridge.start()
 
 # call this at the end/exit of a main
 def stop():
-	usbRS485bridge.stop()
+	interface.usbRS485bridge.stop()
 
 # provides the RS485 ID string stored in the device
 def IDstring(address):
-	y,returndata = usbRS485bridge.read_Modbus_RTU(address,BASEREGFN)
+	y,returndata = interface.usbRS485bridge.read_Modbus_RTU(address,BASEREGFN)
 	if (y==0):
 		idstring = returndata.decode('utf-8')
 	else:
@@ -53,13 +53,13 @@ def changeAddress(old,new):
 	#outdata[4]=oldAddress
 	#outdata[5]=newAddress
 	#but consoldating puts new address at both 4 and 5
-	y=usbRS485bridge.write_Modbus_RTU(old,0xF0,new)
+	y=interface.usbRS485bridge.write_Modbus_RTU(old,0xF0,new)
 	return y
 
 
 def writeRS232(rs485address, outstring,terminator):
 
-	y,returndata = usbRS485bridge.write_232_StringRTU(rs485address,BASEREG485BRIDGE232+32,outstring,terminator)
+	y,returndata = interface.usbRS485bridge.write_232_StringRTU(rs485address,BASEREG485BRIDGE232+32,outstring,terminator)
 	# y=0 no error.  We generally expect a response when writing to a RS232 device
 	# some devices do not send a response, so the operation will timeout at the bridge device
 	# for devices like this we can set the timeout value for the bridge to something smaller.
@@ -86,15 +86,15 @@ listenGPIB	: used when expecting a response. an instrument specific command is s
 
 """
 def resetGPIBbridge(rs485address):
-	status = usbRS485bridge.write_Modbus_RTU(rs485ddress,BASEREG485BRIDGE232+3,0x00)
+	status = interface.usbRS485bridge.write_Modbus_RTU(rs485ddress,BASEREG485BRIDGE232+3,0x00)
 	return status
 
 def writeGPIB(rs485address,gpib, outstring,terminator):
-	y = usbRS485bridge.write_GPIB_StringRTU(rs485address,BASEREG485BRIDGE232+32,gpib,outstring,terminator)
+	y = interface.usbRS485bridge.write_GPIB_StringRTU(rs485address,BASEREG485BRIDGE232+32,gpib,outstring,terminator)
 	return y
 
 def listenGPIB(rs485address,gpib,terminator):
-	y,returndata=usbRS485bridge.listen_GPIB_StringRTU(rs485address,BASEREG485BRIDGE232+32,gpib,terminator)
+	y,returndata=interface.usbRS485bridge.listen_GPIB_StringRTU(rs485address,BASEREG485BRIDGE232+32,gpib,terminator)
 	if (y==0):
 		try:
 			returnstring = returndata.decode('utf-8')
