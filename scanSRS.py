@@ -5,7 +5,7 @@ import re
 import argparse
 import os
 
-import rs485Devices
+import interface.rs485Devices
 import SRSinstruments
 import fileIO
 SRS830 = 0xC5
@@ -41,7 +41,7 @@ r=0.0
 phi=0.0
 f=0.0
 
-rs485Devices.init()
+interface.rs485Devices.init()
 print("initializing RS830")
 SRSinstruments.initSRS830(SRS830)
 time.sleep(0.2)
@@ -76,6 +76,6 @@ with open(filename,mode='w') as f:
 
 print("OK")
 
-rs485Devices.stop()
+interface.rs485Devices.stop()
 
 os._exit(0)
