@@ -10,9 +10,9 @@ import os
 #from datetime import datetime
 import KeithleyInstruments
 #import usbRS485bridge
-import port
+#import port
 #import globalVars
-import rs485Devices
+import interface.rs485Devices
 
 K485GPIB=10
 K485RS485=0xC3
@@ -24,7 +24,7 @@ z=0.0
 
 
 
-rs485Devices.init()
+interface.rs485Devices.init()
 
 
 KeithleyInstruments.iniK485(K485RS485,K485GPIB)
@@ -35,5 +35,5 @@ print("ammeter reading {}".format(z))
 
 print("OK")
 
-rs485Devices.stop()
+interface.rs485Devices.stop()
 os._exit(0)

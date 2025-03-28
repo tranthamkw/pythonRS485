@@ -3,7 +3,7 @@ import sys
 import time
 import re
 
-import rs485Devices
+import interface.rs485Devices
 
 #	Get Identification string:
 #
@@ -13,24 +13,24 @@ import rs485Devices
 
 def get_ID(address):
 
-	return rs485Devices.writeRS232(address, '*IDN?',0x0D)
+	return interface.rs485Devices.writeRS232(address, '*IDN?',0x0D)
 
 #-----------------------------------------------------------
 ##		SRS 335 Function generator
 #-----------------------------------------------------------
 def getSRS335Freq(address):
 	cmdData='FREQ?'
-	returnstring=rs485Devices.writeRS232(address, cmdData,0x0D)
+	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D)
 	f = float(returnstring)
 	return f
 
 def setSRS335Freq(address,f):
 	cmdData="FREQ{:.3f}".format(f)
-	rs485Devices.writeRS232(address, cmdData,0x0D)
+	interface.rs485Devices.writeRS232(address, cmdData,0x0D)
 
 def getSRS335Ampl(address):
 	cmdData='AMPL?'
-	returnstring=rs485Devices.writeRS232(address, cmdData,0x0D)
+	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D)
 	# we are expecting a sequence of numbers follwed by VP
 	returnstring=re.sub("VP","",returnstring)
 	f = float(returnstring)
@@ -56,14 +56,14 @@ def initSRS830(address):
 	HARM1 set the detection harmonic to the fundamental of the reference frequency
 	"""
 	cmdData='OUTX0;OFLT9;PHAS0;RMOD2'
-	rs485Devices.writeRS232(address, cmdData,0x0D)
+	interface.rs485Devices.writeRS232(address, cmdData,0x0D)
 	cmdData='DDEF1,1,0;DDEF2,1,0;RSLP1;HARM1'
-	rs485Devices.writeRS232(address, cmdData,0x0D)
+	interface.rs485Devices.writeRS232(address, cmdData,0x0D)
 
 def getSRS830Data(address):
 
 	cmdData='SNAP?3,4,9'
-	returnstring=rs485Devices.writeRS232(address, cmdData,0x0D)
+	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D)
 	if len(returnstring.split(","))==3:
 		try:
 			r=float(returnstring.split(",")[0])
@@ -97,14 +97,14 @@ def initSRS530(address):
 	R0 sets the trigger mode to positive
 	"""
 	cmdData='W0;S2;P0;D0;T1,6;R0'
-	rs485Devices.writeRS232(address, cmdData,0x0D)
+	interface.rs485Devices.writeRS232(address, cmdData,0x0D)
 
 def getSRS530Data(address):
 	r=0.0
 	phi=0.0
 	f=0.0
 	cmdData='Q1'
-	returnstring=rs485Devices.writeRS232(address, cmdData,0x0D)
+	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D)
 	try:
 		r = float(returnstring)
 	except:
@@ -112,7 +112,7 @@ def getSRS530Data(address):
 
 	time.sleep(0.2)
 	cmdData='Q2'
-	returnstring=rs485Devices.writeRS232(address, cmdData,0x0D)
+	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D)
 	try:
 		phi = float(returnstring)
 	except:
@@ -120,7 +120,7 @@ def getSRS530Data(address):
 
 	time.sleep(0.2)
 	cmdData='F'
-	returnstring=rs485Devices.writeRS232(address, cmdData,0x0D)
+	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D)
 	try:
 		f = float(returnstring)
 	except:
