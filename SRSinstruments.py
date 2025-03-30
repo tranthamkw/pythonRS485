@@ -10,7 +10,7 @@ UNLESS otherwise specified, 'address' is the RS485 address of the 485<->232 brid
 
 def get_ID(address):
 def getSRS335Freq(address):
-def setSRS335Freq(address):
+def setSRS335Freq(address,f):
 def getSRS335Ampl(address):
 
 def initSRS830(address):
@@ -18,7 +18,9 @@ def getSRS830Data(address):
 
 def initSRS530(address):
 def getSRS530Data(address):
-def getSRS530AD(address,ch):
+def getSRS530AD(address,ch): Back pannel channels 1, 2, 3, or 4: measures Analog in +/- 10V
+def setSRS530AD(address,ch,v): Back pannel channels 5 and 6 are Analog outputs +/- 10V.  Channel 5 at power on is a ratio output
+and it's initial value unpredicable. Use ch6 first.
 
 """
 #	Get Identification string:
@@ -191,13 +193,31 @@ def getSRS530AD(address,ch):
 
 	if (ch<1):
 		ch=1
-	if (ch>4):
-		ch=4
-	cmdData="X{}".format(ch)
+	if (ch>6):
+		ch=6
+
+	cmdData='X{}'.format(ch)
+#debug
+#	print("Send command "+cmdData)
 
 	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D)
+#debug
+#	print("Returnstring "+returnstring)
 
 	try:
 		f = float(returnstring)
 	except:
 		f=0.0
+
+	return f
+
+
+def setSRS530AD(address,ch,v):
+	if ch<5:
+		ch=5
+	if ch>6:
+		ch=6
+	cmdData="X{},{:.3f}".format(ch,v)
+#debug
+#	print("Send command "+ cmdData)
+	interface.rs485Devices.writeRS232(address, cmdData,0x0D)
