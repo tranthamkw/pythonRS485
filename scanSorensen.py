@@ -95,6 +95,7 @@ with open(filename,mode='w') as f:
 
 
 
+Sorensen.setSorensen120Volts(SORENSENRS485, SORENSENGPIB, 0.0)
 
 print("OK")
 

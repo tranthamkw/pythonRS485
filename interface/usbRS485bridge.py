@@ -188,8 +188,9 @@ def readDevice():
 
 def write_232_StringRTU(address,reg, writestring,terminator):
 	global bridge
-# Writes an ascii command to a 485-232 bridge device. this routine DOES append a CR to data,
-# which is a very common terminator character with RS232 ascii communications.
+# Writes an ascii command to a 485-232 bridge device. this routine DOES NOT append a CR to data,
+# which is a very common terminator character with RS232 ascii communications. Different instruments
+# require different terminators. This is passed in calling the function
 #
 # The bridge device is addressed, and data is written to a register.  The bridge strips this, and the CRC
 # portions before passing on to the writestring to RS232/GPIB.
@@ -294,8 +295,7 @@ def listen_GPIB_StringRTU(address,reg,gpib,terminator):
 
 def write_GPIB_StringRTU(address,reg,gpib, writestring,terminator):
 	global bridge
-# Writes an ascii command to a 485-GPIB bridge device. this routine DOES append a CR to data,
-# which is a very common terminator character with RS232 ascii communications.
+# Writes an ascii command to a 485-GPIB bridge device.,
 #
 # use this when a response is not expected from the instrument attached to the GPIB bus
 
