@@ -21,7 +21,8 @@ SRS530 = 0xCA
 ## these instruments need both the RS485bridge address, and , since GPIB is addressable, we have
 ## to set the appropriate GPIB address.
 K485GPIB=10
-K485RS485=0xC3
+K485RS485=0xC2
+
 #constants for conversion
 KEPCO_GAIN_M=10.2 #this is slope of your calibration graph. Change this to actual
 KEPCO_GAIN_B=1.5 #this is the y-int of your calibration graph. Change this to actual
@@ -100,6 +101,7 @@ lockinPhi=[]
 k=0
 # take the data
 print("start data acq")
+print('setv,outv,tempv,tempI1,tempI2,z,r2,phi2,f')
 while k<numloops:
 	setv = startv + float(k)*stepv
 	outv=(setv - KEPCO_GAIN_B)/KEPCO_GAIN_M
@@ -126,7 +128,7 @@ while k<numloops:
 	lockinR.append(r2)
 	lockinPhi.append(phi2)
 
-	print("{}\t{:.3f}\t{:.3f}\t{:.3f}\t{}\t{}\t{}\t{}".format(setv,outv,tempv,tempI1,tempI2,z,r2,phi2))
+	print("{}\t{:.3f}\t{:.3f}\t{:.3f}\t{}\t{}\t{}\t{}\t{}".format(setv,outv,tempv,tempI1,tempI2,z,r2,phi2,f2))
 	k+=1
 
 # Save it to file
