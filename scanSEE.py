@@ -24,8 +24,8 @@ K485GPIB=10
 K485RS485=0xC2
 
 #constants for conversion
-KEPCO_GAIN_M=10.2 #this is slope of your calibration graph. Change this to actual
-KEPCO_GAIN_B=1.5 #this is the y-int of your calibration graph. Change this to actual
+KEPCO_GAIN_M=9.2 #this is slope of your calibration graph. Change this to actual
+KEPCO_GAIN_B=0.0 #this is the y-int of your calibration graph. Change this to actual
 # i am assuming that kepcoOut= M * vin + B
 # so	voutX6 = (desiredKepcoOut - B)/M
 
@@ -101,11 +101,11 @@ lockinPhi=[]
 k=0
 # take the data
 print("start data acq")
-print('setv,outv,tempv,tempI1,tempI2,z,r2,phi2,f')
+print('setv,tempv,tempI1,tempI2,z,r2,phi2,f')
 while k<numloops:
 	setv = startv + float(k)*stepv
-	outv=(setv - KEPCO_GAIN_B)/KEPCO_GAIN_M
-	SRSinstruments.setSRS530AD(SRS530,6,outv)
+#	outv=(setv - KEPCO_GAIN_B)/KEPCO_GAIN_M
+	SRSinstruments.setSRS530AD(SRS530,6,setv)
 	time.sleep(0.05)
 	# read in actual from X3
 	tempv=(SRSinstruments.getSRS530AD(SRS530,3))/VDIVIDER
@@ -128,7 +128,7 @@ while k<numloops:
 	lockinR.append(r2)
 	lockinPhi.append(phi2)
 
-	print("{}\t{:.3f}\t{:.3f}\t{:.3f}\t{}\t{}\t{}\t{}\t{}".format(setv,outv,tempv,tempI1,tempI2,z,r2,phi2,f2))
+	print("{}\t{:.3f}\t{:.3f}\t{:.3f}\t{}\t{}\t{}\t{}".format(setv,tempv,tempI1,tempI2,z,r2,phi2,f2))
 	k+=1
 
 # Save it to file
