@@ -9,7 +9,7 @@ import interface.rs485Devices
 import SRSinstruments
 import fileIO
 SRS830 = 0xC5
-SRS530 = 0xCA
+#SRS530 = 0xCA
 SRS335 = 0xC0
 
 #															#
@@ -48,9 +48,9 @@ time.sleep(0.2)
 returnstring=SRSinstruments.get_ID(SRS830)
 print("Found "+returnstring)
 
-print("\ninitializing RS530  (no id string available)")
-SRSinstruments.initSRS530(SRS530)
-time.sleep(0.2)
+#print("\ninitializing RS530  (no id string available)")
+#SRSinstruments.initSRS530(SRS530)
+#time.sleep(0.2)
 returnstring=SRSinstruments.get_ID(SRS335)
 print("\nFound "+returnstring)
 
@@ -61,14 +61,14 @@ with open(filename,mode='w') as f:
 	while k<numloops:
 		setf = startf + float(k)*stepf
 		SRSinstruments.setSRS335Freq(SRS335,setf)
-		time.sleep(1)
+		time.sleep(0.3)
 		myf=SRSinstruments.getSRS335Freq(SRS335)
 		r1,phi1,f1 = SRSinstruments.getSRS830Data(SRS830)
-		time.sleep(0.2)
-		r2,phi2,f2 = SRSinstruments.getSRS530Data(SRS530)
-		print("{}\t{}\t{}\t{}\t\t{}\t{}\t{}".format(myf,r1,phi1,f1,r2,phi2,f2))
-		f.write("{},{},{},{},{},{},{},{}\n".format(setf,myf,r1,phi1,f1,r2,phi2,f2))
-		time.sleep(0.2)
+#		time.sleep(0.2)
+#		r2,phi2,f2 = SRSinstruments.getSRS530Data(SRS530)
+		print("{}\t{}\t{}\t{}".format(myf,r1,phi1,f1))
+		f.write("{},{},{},{},{}\n".format(setf,myf,r1,phi1,f1))
+		time.sleep(0.1)
 		k+=1
 
 

@@ -6,8 +6,8 @@ import serial
 #import os
 import threading
 
-TIMEOUT=30
-
+TIMEOUT=60
+DELAY=0.2
 #
 # interface layer with a "waveshare" industrial USB<-->RS485 device
 # https://www.amazon.com/dp/B081MB6PN2
@@ -135,6 +135,7 @@ def write_Modbus_RTU(address, reg, writedata):
 #	printmybyte(cmd)
 
 	bridge.write(cmd)
+
 	returndata=readDevice()
 	z=-1 # // initialize an error variable.
 
@@ -161,14 +162,14 @@ def readDevice():
 	global bridge
 
 	#timeOut=5
-	delay=0.25
+	#delay=0.2
 
 	READ_BUFFER = 1
 	rx_byte_arr=[]
 	t=0
-	time.sleep(delay)
+	time.sleep(DELAY)
 	while not((t>TIMEOUT)or(bridge.in_waiting> 0)):
-		time.sleep(delay)
+		time.sleep(DELAY)
 		t+=1
 #		sys.stdout.write(".")
 #		sys.stdout.flush()
@@ -186,7 +187,7 @@ def readDevice():
 	return rx_byte_arr
 
 
-def write_232_StringRTU(address,reg, writestring,terminator):
+def write_232_StringRTU(address,reg, writestring,terminator,response):
 	global bridge
 # Writes an ascii command to a 485-232 bridge device. this routine DOES NOT append a CR to data,
 # which is a very common terminator character with RS232 ascii communications. Different instruments
@@ -216,31 +217,34 @@ def write_232_StringRTU(address,reg, writestring,terminator):
 #	printmybyte(cmd)
 
 	bridge.write(cmd)
-	rtnData=readDevice()
+	status=0
+	returnData=[]
+
+	if response:
+		rtnData=readDevice()
 
 #	sys.stdout.write("Rx:")
 #	printmybyte(rtnData)
 
-	status=1
-	returnData=[]
-	if(len(rtnData)>0):
-		if not (len(rtnData)==rtnData[2]+5):
-			print("Unexpected number of return bytes")
-			print("rtnData[2]= {}".format(rtnData[2]))
-			print("len(rtnData)= {}".format(len(rtnData)))
+		status=1
+		if(len(rtnData)>0):
+			if not (len(rtnData)==rtnData[2]+5):
+				print("Unexpected number of return bytes")
+				print("rtnData[2]= {}".format(rtnData[2]))
+				print("len(rtnData)= {}".format(len(rtnData)))
 
-		if(validateRTU(rtnData)):
-			if (not (rtnData[1] & 0x80)):
-				returnData=rtnData[3:-2]
-				status=0
+			if(validateRTU(rtnData)):
+				if (not (rtnData[1] & 0x80)):
+					returnData=rtnData[3:-2]
+					status=0
+				else:
+					status=rtnData[2]<<8|rtnData[3]
+					print("writeRS232Bridge process returned error ")
 			else:
-				status=rtnData[2]<<8|rtnData[3]
-				print("writeRS232Bridge process returned error ")
+				print("CRC bytes in response invalid")
 		else:
-			print("CRC bytes in response invalid")
-	else:
-		status=1;
-		print("WriteBridge: No Response from bridge at RS485 address {}".format(hex(address)))
+			status=1;
+			print("WriteBridge: No Response from bridge at RS485 address {}".format(hex(address)))
 
 	return status,returnData
 

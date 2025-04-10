@@ -36,17 +36,17 @@ def get_ID(address):
 """ Returns the currently set frequency of the generator"""
 def getSRS335Freq(address):
 	cmdData='FREQ?'
-	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D)
+	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D,True)
 	f = float(returnstring)
 	return f
 """ Sets the frequency of the generator."""
 def setSRS335Freq(address,f):
 	cmdData="FREQ{:.3f}".format(f)
-	interface.rs485Devices.writeRS232(address, cmdData,0x0D)
+	interface.rs485Devices.writeRS232(address, cmdData,0x0D,False)
 """ Returns the amplitude of the output"""
 def getSRS335Ampl(address):
 	cmdData='AMPL?'
-	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D)
+	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D,True)
 	# we are expecting a sequence of numbers follwed by VP
 	returnstring=re.sub("VP","",returnstring)
 	f = float(returnstring)
@@ -105,9 +105,9 @@ def initSRS830(address):
 	0x0D is the terminator required by the SRS830
 	"""
 	cmdData='OUTX0;OFLT9;PHAS0;RMOD2'
-	interface.rs485Devices.writeRS232(address, cmdData,0x0D)
+	interface.rs485Devices.writeRS232(address, cmdData,0x0D,False)
 	cmdData='DDEF1,1,0;DDEF2,1,0;RSLP1;HARM1'
-	interface.rs485Devices.writeRS232(address, cmdData,0x0D)
+	interface.rs485Devices.writeRS232(address, cmdData,0x0D,False)
 
 
 def getSRS830Data(address):
@@ -116,7 +116,8 @@ def getSRS830Data(address):
 	are available
 	"""
 	cmdData='SNAP?3,4,9'
-	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D)
+	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D,True)
+#	print(returnstring)
 	if len(returnstring.split(","))==3:
 		try:
 			r=float(returnstring.split(",")[0])
@@ -136,6 +137,83 @@ def getSRS830Data(address):
 		f=0.0
 	return r,phi,f
 
+
+def getSRS830AuxIn(address):
+	""" See SRS manual.  The SNAP function pulls data at one time, instead of having
+	to make repeated calls.  '3,4,9' are the R, theta, and frequency values. Others
+	are available
+	"""
+	cmdData='SNAP?5,6,7,8'
+	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D,True)
+#	print(returnstring)
+	if len(returnstring.split(","))==4:
+		try:
+			r1=float(returnstring.split(",")[0])
+		except:
+			r1=0.0
+		try:
+			r2=float(returnstring.split(",")[1])
+		except:
+			r2=0.0
+		try:
+			r3=float(returnstring.split(",")[2])
+		except:
+			r3=0.0
+		try:
+			r4=float(returnstring.split(",")[2])
+		except:
+			r4=0.0
+	else:
+		r1=0.0
+		r2=0.0
+		r3=0.0
+		r4=0.0
+
+	return r1,r2,r3,r4
+
+def getSRS830AD(address,ch):
+	"""
+	OAUX? i 
+	The OAUX? command queries the Aux Input values. The parameter i
+	selects an Aux Input (1, 2, 3 or 4) and is required. The Aux Input voltages
+	are returned as ASCII strings with units of Volts. The resolution is
+	1/3 mV. This command is a query only command.
+
+	"""
+	if ch<1:
+		ch=1
+	if ch>4:
+		ch=4
+	cmdData="OAUX?{}".format(ch)
+	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D,True)
+	try:
+		f = float(returnstring)
+	except:
+		f=0.0
+
+	return f
+
+def setSRS830AD(address,ch,v):
+	"""
+	AUXV (?) i {, x}
+
+	The AUXV command sets or queries the Aux Output voltage when the
+	output. The parameter i selects an Aux Output (1, 2, 3 or 4) and is
+	required. The parameter x is the output voltage (real number of Volts)
+	and is limited to -10.500 ≤ x ≤ 10.500. The output voltage will be set to
+	the nearest mV.
+
+	"""
+	if ch<1:
+		ch=1
+	if ch>4:
+		ch=4
+	cmdData="AUXV {},{:.2f}".format(ch,v)
+	interface.rs485Devices.writeRS232(address, cmdData,0x0D,False)
+
+
+
+
 #-----------------------------------------------------------
 ##		SRS 530 Analog lockin
 #-----------------------------------------------------------
@@ -150,7 +228,7 @@ def initSRS530(address):
 	R0 sets the trigger mode to positive
 	"""
 	cmdData='W0;S2;P0;D0;T1,6;R0'
-	interface.rs485Devices.writeRS232(address, cmdData,0x0D)
+	interface.rs485Devices.writeRS232(address, cmdData,0x0D,False)
 
 """this is a wrapper to return the same information as that in the SRS830, above
 The SRS530 doesnt have a 'SNAP' so we get the same information piece-meal."""
@@ -159,23 +237,23 @@ def getSRS530Data(address):
 	phi=0.0
 	f=0.0
 	cmdData='Q1'
-	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D)
+	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D,True)
 	try:
 		r = float(returnstring)
 	except:
 		r=0.0
 
-	time.sleep(0.2)
+	time.sleep(0.02)
 	cmdData='Q2'
-	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D)
+	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D,True)
 	try:
 		phi = float(returnstring)
 	except:
 		phi=0.0
 
-	time.sleep(0.2)
+	time.sleep(0.02)
 	cmdData='F'
-	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D)
+	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D,True)
 	try:
 		f = float(returnstring)
 	except:
@@ -200,7 +278,7 @@ def getSRS530AD(address,ch):
 #debug
 #	print("Send command "+cmdData)
 
-	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D)
+	returnstring=interface.rs485Devices.writeRS232(address, cmdData,0x0D,True)
 #debug
 #	print("Returnstring "+returnstring)
 
@@ -220,4 +298,5 @@ def setSRS530AD(address,ch,v):
 	cmdData="X{},{:.3f}".format(ch,v)
 #debug
 #	print("Send command "+ cmdData)
-	interface.rs485Devices.writeRS232(address, cmdData,0x0D)
+	interface.rs485Devices.writeRS232(address, cmdData,0x0D,False)
+

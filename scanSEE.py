@@ -17,21 +17,14 @@ import fileIO  # There is an 'automatic' file-namer, based on time of day. There
 
 ## these instruments are connected by RS232. No address is required for the instrument itself
 ## but we need the RS485<-->RS232 bridge RS485 address.
-SRS530 = 0xCA
+SRS830 = 0xC5
 ## these instruments need both the RS485bridge address, and , since GPIB is addressable, we have
 ## to set the appropriate GPIB address.
 K485GPIB=10
-K485RS485=0xC2
+K485RS485=0xC3
 
-#constants for conversion
-KEPCO_GAIN_M=9.2 #this is slope of your calibration graph. Change this to actual
-KEPCO_GAIN_B=0.0 #this is the y-int of your calibration graph. Change this to actual
-# i am assuming that kepcoOut= M * vin + B
-# so	voutX6 = (desiredKepcoOut - B)/M
-
-SR570_1SCALE=1e-6
-SR570_2SCALE=1e-9
-VDIVIDER=0.12 #voltage divider determined by R1&R2. change to actual
+DELAY=0.1
+DELAY2=1
 
 instrumentDiagram="""
 
@@ -72,63 +65,55 @@ startv = args.startv
 endv = args.endv
 stepv = args.stepv
 
-#TODO put in check to ensure startv and endv are in the 0 - 120V range
-
 numloops = int((endv-startv)/stepv)+2
 if numloops < 1:
 	print("num loops too small or startf<endf")
 	exit(-1)
 
-
 filename = fileIO.calculateFilename('SCAN_SEE_') #auto filename
 
 interface.rs485Devices.init()
-print("initializing RS530")
-SRSinstruments.initSRS530(SRS530)
-time.sleep(0.1)
+print("initializing RS830")
 
-KeithleyInstruments.iniK485(K485RS485,K485GPIB)
+SRSinstruments.initSRS830(SRS830)
 
-# lists to hold data
-# somebody needs to teach me numpy
-actualv=[]
-current1=[]
-current2=[]
-current3=[]
-lockinR=[]
-lockinPhi=[]
+time.sleep(DELAY)
+
+
+#print("initalize K485")
+#KeithleyInstruments.iniK485(K485RS485,K485GPIB)
+
 
 k=0
 # take the data
 print("start data acq")
-print('setv,tempv,tempI1,tempI2,z,r2,phi2,f')
+print('setv,x1,x2,x3,x4,r2,phi2,f')
 while k<numloops:
 	setv = startv + float(k)*stepv
 #	outv=(setv - KEPCO_GAIN_B)/KEPCO_GAIN_M
-	SRSinstruments.setSRS530AD(SRS530,6,setv)
-	time.sleep(0.05)
-	# read in actual from X3
-	tempv=(SRSinstruments.getSRS530AD(SRS530,3))/VDIVIDER
-	actualv.append(tempv)
-	time.sleep(0.05)
-	#read current amplifier 1
-	tempI1=(SRSinstruments.getSRS530AD(SRS530,1))*SR570_1SCALE
-	current1.append(tempI1)
-	time.sleep(0.05)
-	#read current amplifier 2
-	tempI2=(SRSinstruments.getSRS530AD(SRS530,2))*SR570_2SCALE
-	current2.append(tempI2)
-	time.sleep(0.05)
-	#read keithly 485
-	z=KeithleyInstruments.readK485(K485RS485,K485GPIB)
-	time.sleep(0.1)
-	current3.append(z)
-	#read r and phi
-	r2,phi2,f2 = SRSinstruments.getSRS530Data(SRS530)
-	lockinR.append(r2)
-	lockinPhi.append(phi2)
+#	print("setv")
+	SRSinstruments.setSRS830AD(SRS830,2,setv)
+	time.sleep(DELAY2)
 
-	print("{}\t{:.3f}\t{:.3f}\t{:.3f}\t{}\t{}\t{}\t{}".format(setv,tempv,tempI1,tempI2,z,r2,phi2,f2))
+#	the following works IF we dont call setAD (above) very strange
+#	x1,x2,x3,x4 = SRSinstruments.getSRS830AuxIn(SRS830)
+	x1=SRSinstruments.getSRS830AD(SRS830,1)
+	time.sleep(DELAY)
+	x2=SRSinstruments.getSRS830AD(SRS830,2)
+	time.sleep(DELAY)
+	x3=SRSinstruments.getSRS830AD(SRS830,3)
+	time.sleep(DELAY)
+	x4=SRSinstruments.getSRS830AD(SRS830,4)
+	time.sleep(DELAY)
+
+
+#	z=KeithleyInstruments.readK485(K485RS485,K485GPIB)
+#	time.sleep(DELAY)
+
+	r2,phi2,f2 = SRSinstruments.getSRS830Data(SRS830)
+	time.sleep(DELAY)
+
+	print("{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{}\t{}\t{}".format(setv,x1,x2,x3,x4,r2,phi2,f2))
 	k+=1
 
 # Save it to file

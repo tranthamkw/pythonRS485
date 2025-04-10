@@ -57,14 +57,14 @@ def changeAddress(old,new):
 	return y
 
 
-def writeRS232(rs485address, outstring,terminator):
+def writeRS232(rs485address, outstring,terminator,response):
 
-	y,returndata = interface.usbRS485bridge.write_232_StringRTU(rs485address,BASEREG485BRIDGE232+32,outstring,terminator)
+	y,returndata = interface.usbRS485bridge.write_232_StringRTU(rs485address,BASEREG485BRIDGE232+32,outstring,terminator,response)
 	# y=0 no error.  We generally expect a response when writing to a RS232 device
 	# some devices do not send a response, so the operation will timeout at the bridge device
 	# for devices like this we can set the timeout value for the bridge to something smaller.
 	# for devices which we know nothing is returned, the returnstring should not be used.
-	if (y==0):
+	if (y==0)and response:
 		try:
 			returnstring = returndata.decode('utf-8')
 		except:
