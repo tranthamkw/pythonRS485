@@ -6,7 +6,7 @@ import serial
 #import os
 import threading
 
-TIMEOUT=60
+TIMEOUT=30
 DELAY=0.2
 #
 # interface layer with a "waveshare" industrial USB<-->RS485 device
@@ -187,7 +187,7 @@ def readDevice():
 	return rx_byte_arr
 
 
-def write_232_StringRTU(address,reg, writestring,terminator,response):
+def write_232_StringRTU(address,reg, writestring,terminator):
 	global bridge
 # Writes an ascii command to a 485-232 bridge device. this routine DOES NOT append a CR to data,
 # which is a very common terminator character with RS232 ascii communications. Different instruments
@@ -220,7 +220,7 @@ def write_232_StringRTU(address,reg, writestring,terminator,response):
 	status=0
 	returnData=[]
 
-	if response:
+	if True:
 		rtnData=readDevice()
 
 #	sys.stdout.write("Rx:")

@@ -25,27 +25,6 @@ K485RS485=0xC3
 
 DELAY=0.1
 
-instrumentDiagram="""
-
-	+-------+
-	|	|
-	|	+------<X1-------<[SR570]<----- Electrode 1
-	|SRS	|
-	|530	+------<X2-------<[SR570]<----- Electrode 2
-	|	|
-	|	+------<X3-------------+-----/\R1/\-----+
-	|	|	GND---/\R2/\---+		|
-	|	|					|
-	|	+------>X6>------>[Kepco x10]>----------------> Electrode 3
-	|	|
-	|	|
-	+-------+
-	  |   |
-	  R   Theta
-
-		<-----[Keithly485]<-----------------<Electrode4
-
-"""
 
 #								#
 # ++++++++++++++++++++	START MAIN +++++++++++++++++++++++#
@@ -75,8 +54,20 @@ interface.rs485Devices.init()
 print("initializing RS830")
 
 SRSinstruments.initSRS830(SRS830)
-
 time.sleep(DELAY)
+
+timeout=interface.rs485Devices.getRS485BridgeTimeout(SRS830)
+time.sleep(DELAY)
+print("Current timeout {}".format(timeout))
+
+print("Setting timeout to 32")
+interface.rs485Devices.setRS485BridgeTimeout(SRS830,32)
+time.sleep(DELAY)
+
+timeout=interface.rs485Devices.getRS485BridgeTimeout(SRS830)
+time.sleep(DELAY)
+print("New timeout {}".format(timeout))
+
 
 
 print("initalize K485")

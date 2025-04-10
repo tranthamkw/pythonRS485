@@ -56,15 +56,18 @@ def changeAddress(old,new):
 	y=interface.usbRS485bridge.write_Modbus_RTU(old,0xF0,new)
 	return y
 
+"""
+	RS485 to RS232 bridge card
 
-def writeRS232(rs485address, outstring,terminator,response):
+"""
+def writeRS232(rs485address, outstring,terminator):
 
-	y,returndata = interface.usbRS485bridge.write_232_StringRTU(rs485address,BASEREG485BRIDGE232+32,outstring,terminator,response)
+	y,returndata = interface.usbRS485bridge.write_232_StringRTU(rs485address,BASEREG485BRIDGE232+32,outstring,terminator)
 	# y=0 no error.  We generally expect a response when writing to a RS232 device
 	# some devices do not send a response, so the operation will timeout at the bridge device
 	# for devices like this we can set the timeout value for the bridge to something smaller.
 	# for devices which we know nothing is returned, the returnstring should not be used.
-	if (y==0)and response:
+	if (y==0):
 		try:
 			returnstring = returndata.decode('utf-8')
 		except:
@@ -74,6 +77,31 @@ def writeRS232(rs485address, outstring,terminator,response):
 		returnstring="0.0"
 
 	return returnstring
+
+
+
+def getRS485BridgeTimeout(Address):
+
+	y,returndata=interface.usbRS485bridge.read_Modbus_RTU(Address,BASEREG485BRIDGE232+2)
+#	debug
+#	interface.usbRS485bridge.printmybyte(returndata)
+
+	timeout=0
+	if (y==0)and len(returndata)==2:
+		timeout=(returndata[0]<<8 | returndata[1])
+	else:
+		print("error in get BridgeTimeout")
+
+	return timeout
+
+
+def setRS485BridgeTimeout(Address,timeout):
+
+	status = interface.usbRS485bridge.write_Modbus_RTU(Address,BASEREG485BRIDGE232+2,timeout)
+
+	return status
+
+
 
 """
 ##############################################################
