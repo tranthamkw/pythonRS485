@@ -23,7 +23,7 @@ SRS830 = 0xC5
 K485GPIB=10
 K485RS485=0xC3
 
-DELAY=0.1
+DELAY=0.05
 DELAY2=1
 
 instrumentDiagram="""
@@ -77,12 +77,12 @@ print("initializing RS830")
 
 SRSinstruments.initSRS830(SRS830)
 
+time.sleep(DELAY2)
+
+
+print("initalize K485")
+KeithleyInstruments.iniK485(K485RS485,K485GPIB)
 time.sleep(DELAY)
-
-
-#print("initalize K485")
-#KeithleyInstruments.iniK485(K485RS485,K485GPIB)
-
 
 k=0
 # take the data
@@ -107,13 +107,13 @@ while k<numloops:
 	time.sleep(DELAY)
 
 
-#	z=KeithleyInstruments.readK485(K485RS485,K485GPIB)
-#	time.sleep(DELAY)
+	z=KeithleyInstruments.readK485(K485RS485,K485GPIB)
+	time.sleep(DELAY)
 
 	r2,phi2,f2 = SRSinstruments.getSRS830Data(SRS830)
 	time.sleep(DELAY)
 
-	print("{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{}\t{}\t{}".format(setv,x1,x2,x3,x4,r2,phi2,f2))
+	print("{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{}\t{}\t{}\t{}".format(setv,x1,x2,x3,x4,z,r2,phi2,f2))
 	k+=1
 
 # Save it to file

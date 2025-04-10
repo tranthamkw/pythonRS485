@@ -10,10 +10,13 @@ import interface.rs485Devices
 #-----------------------------------------------------------
 
 def iniK485(rs485address,gpibaddress):
+
 	y=interface.rs485Devices.writeGPIB(rs485address,gpibaddress,'G1R0X',0x0D)
+
 	return y
 
 def readK485(rs485address,gpibaddress):
+
 	returnstring=interface.rs485Devices.listenGPIB(rs485address,gpibaddress,0x0A)
 
 	try:
