@@ -17,7 +17,7 @@ import fileIO  # There is an 'automatic' file-namer, based on time of day. There
 
 ## these instruments are connected by RS232. No address is required for the instrument itself
 ## but we need the RS485<-->RS232 bridge RS485 address.
-SRS830 = 0xC5
+SRS530 = 0xC5
 ## these instruments need both the RS485bridge address, and , since GPIB is addressable, we have
 ## to set the appropriate GPIB address.
 K485GPIB=10
@@ -25,27 +25,6 @@ K485RS485=0xC3
 
 DELAY=0.1
 
-instrumentDiagram="""
-
-	+-------+
-	|	|
-	|	+------<X1-------<[SR570]<----- Electrode 1
-	|SRS	|
-	|530	+------<X2-------<[SR570]<----- Electrode 2
-	|	|
-	|	+------<X3-------------+-----/\R1/\-----+
-	|	|	GND---/\R2/\---+		|
-	|	|					|
-	|	+------>X6>------>[Kepco x10]>----------------> Electrode 3
-	|	|
-	|	|
-	+-------+
-	  |   |
-	  R   Theta
-
-		<-----[Keithly485]<-----------------<Electrode4
-
-"""
 
 #								#
 # ++++++++++++++++++++	START MAIN +++++++++++++++++++++++#
@@ -74,9 +53,21 @@ filename = fileIO.calculateFilename('SCAN_SEE_') #auto filename
 interface.rs485Devices.init()
 print("initializing RS830")
 
-SRSinstruments.initSRS830(SRS830)
-
+SRSinstruments.initSRS530(SRS530)
 time.sleep(DELAY)
+
+timeout=interface.rs485Devices.getRS485BridgeTimeout(SRS530)
+time.sleep(DELAY)
+print("Current timeout {}".format(timeout))
+
+print("Setting timeout to 32")
+interface.rs485Devices.setRS485BridgeTimeout(SRS530,32)
+time.sleep(DELAY)
+
+timeout=interface.rs485Devices.getRS485BridgeTimeout(SRS530)
+time.sleep(DELAY)
+print("New timeout {}".format(timeout))
+
 
 
 print("initalize K485")
@@ -91,27 +82,25 @@ while k<numloops:
 	setv = startv + float(k)*stepv
 #	outv=(setv - KEPCO_GAIN_B)/KEPCO_GAIN_M
 	print("setv")
-	SRSinstruments.setSRS830AD(SRS830,2,setv)
+	SRSinstruments.setSRS530AD(SRS530,6,setv)
 	time.sleep(DELAY)
 	print("get AD inputs")
-#	the following is supposed to be faster than individual calls 
-	x1,x2,x3,x4 = SRSinstruments.getSRS830AuxIn(SRS830)
-	"""
-	x1=SRSinstruments.getSRS830AD(SRS830,1)
+
+	x1=SRSinstruments.getSRS530AD(SRS530,1)
 	time.sleep(DELAY)
-	x2=SRSinstruments.getSRS830AD(SRS830,2)
+	x2=SRSinstruments.getSRS530AD(SRS530,2)
 	time.sleep(DELAY)
-	x3=SRSinstruments.getSRS830AD(SRS830,3)
+	x3=SRSinstruments.getSRS530AD(SRS530,3)
 	time.sleep(DELAY)
-	x4=SRSinstruments.getSRS830AD(SRS830,4)
-	"""
+	x4=SRSinstruments.getSRS530AD(SRS530,4)
+
 	time.sleep(DELAY)
 
 
 	z=KeithleyInstruments.readK485(K485RS485,K485GPIB)
 	time.sleep(DELAY)
 
-	r2,phi2,f2 = SRSinstruments.getSRS830Data(SRS830)
+	r2,phi2,f2 = SRSinstruments.getSRS530Data(SRS530)
 	time.sleep(DELAY)
 
 	print("{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{}\t{}\t{}\t{}".format(setv,x1,x2,x3,x4,z,r2,phi2,f2))
