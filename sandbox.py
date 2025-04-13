@@ -1,72 +1,39 @@
 #mcamain.py
 import sys
 import time
-#import serial
-#import port
 import re
-#import packet
 import os
-#import threading
-#from datetime import datetime
-import KeithleyInstruments
-import Sorensen
-import SRSinstruments
-#import usbRS485bridge
-#import port
-#import globalVars
 
 import interface.rs485Devices
 
 
-SRS830 = 0xC5
-SRS530 = 0xCA
-SRS335 = 0xC0
-
-K485GPIB=10
-K485RS485=0xC3
-
-SORENSENRS485=0xC9
-SORENSENGPIB=0x0C
+DIGIDEVICE=0xD0
 
 # this is a sand pit to test various things before wrapping into a dedicated main script#
 # ++++++++++++++++++++	START MAIN +++++++++++++++++++++++#
 #
 
 
-z=0.0
+z=0
 
 interface.rs485Devices.init()
+print("getting value")
+z=interface.rs485Devices.getRS485DigitalOut(DIGIDEVICE)
+print("digital value {}".format(z))
+time.sleep(0.2)
 
-
-KeithleyInstruments.iniK485(K485RS485,K485GPIB)
-
-z=KeithleyInstruments.readK485(K485RS485,K485GPIB)
-print("read Keithley")
-print("ammeter reading {}".format(z))
-
-Sorensen.initSorensen120(SORENSENRS485, SORENSENGPIB)
-print("Set Sorensen")
-myvolts = 12.1
-Sorensen.setSorensen120Volts(SORENSENRS485, SORENSENGPIB, myvolts)
-
+print("setting output")
+z=interface.rs485Devices.setRS485DigitalIO(DIGIDEVICE,0x0)
 time.sleep(0.1)
-print("Read Sorensen")
 
-z=Sorensen.getSorensen120Volts(SORENSENRS485, SORENSENGPIB)
-print("Volts set to {}".format(z))
+print("setting value")
+z=interface.rs485Devices.setRS485DigitalOut(DIGIDEVICE,0xC)
+time.sleep(0.1)
 
-z=Sorensen.getSorensen120Amps(SORENSENRS485, SORENSENGPIB)
-print("Iout {}".format(z))
-
-
-print("Testing SRS530 analog output function X6. Ten settings from 3.0 to 3.09 in increments of 0.01")
-for j in range(10):
-	outvolts=3.0+float(j)/100.0
-	SRSinstruments.setSRS530AD(SRS530,6,outvolts)
-	time.sleep(0.2)
-	z = SRSinstruments.getSRS530AD(SRS530,6)
-	print("{}\t{} Volts".format(j,z))
-	time.sleep(0.2)
+print("getting value")
+z=interface.rs485Devices.getRS485DigitalOut(DIGIDEVICE)
+print("digital value {}".format(z))
+time.sleep(0.5)
 
 
 print("OK")

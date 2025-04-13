@@ -12,7 +12,11 @@ import interface.usbRS485bridge
 # devices register definitions.
 
 BASEREGANLG= 0x0D0D
-BASEREGSERVO= 0x0A0A
+BASEREGSERVO= 0x0A0A  #also base register for  general purpose digital
+# + 16 for read/write to digital IO
+# + 8 for read/write to TRIS (this sets if digial IO is in or output)
+# +0,+1 servo
+
 BASEREG485BRIDGE232= 0x0C0C
 BASEREGSTEPMTR= 0x0B0B
 BASEREGFN= 0x00F0
@@ -37,7 +41,10 @@ def init():
 # call this at the end/exit of a main
 def stop():
 	interface.usbRS485bridge.stop()
+"""
+ common functions for all of my RS485 cards
 
+"""
 # provides the RS485 ID string stored in the device
 def IDstring(address):
 	y,returndata = interface.usbRS485bridge.read_Modbus_RTU(address,BASEREGFN)
@@ -55,6 +62,43 @@ def changeAddress(old,new):
 	#but consoldating puts new address at both 4 and 5
 	y=interface.usbRS485bridge.write_Modbus_RTU(old,0xF0,new)
 	return y
+"""
+Digital IO cards
+
+"""
+
+def setRS485DigitalOut(address,value):
+	"""
+	value & 0F = (in byte order MSB to LSB) RA5 RA4 RC3 RB4
+
+	"""
+	value = value & 0x0F
+	y = interface.usbRS485bridge.write_Modbus_RTU(address,BASEREGSERVO+16,value)
+	return y
+
+def setRS485DigitalIO(address,value):
+	"""
+	sets if digital IO's are inputs or outputs. power on default for cards is input
+	value & 0F = (in byte order MSB to LSB) TRISA5 TRISA4 TRISC3 TRISB4
+	if bit = 1; sets input
+	if bit = 0; sets output
+	"""
+	value = value & 0x0F
+	y = interface.usbRS485bridge.write_Modbus_RTU(address,BASEREGSERVO+8,value)
+	return y
+
+
+def getRS485DigitalOut(address):
+	y,returndata = interface.usbRS485bridge.read_Modbus_RTU(address,BASEREGSERVO+16)
+	value=0
+	if (y==0)and len(returndata)==2:
+		value=(returndata[0]<<8 | returndata[1])
+	else:
+		print("error in get data")
+
+	return value
+
+
 
 """
 	RS485 to RS232 bridge card
@@ -106,7 +150,7 @@ def setRS485BridgeTimeout(Address,timeout):
 """
 ##############################################################
 
-		GPIB	functions
+		GPIB  interface card	functions
 
 resetGPIBbridge
 writeGPIB	: used when sending a command to a GPIB instrument, where a reponse is not expected
