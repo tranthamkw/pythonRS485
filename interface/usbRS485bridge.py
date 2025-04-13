@@ -390,6 +390,7 @@ def read_Modbus_RTU(address,reg):
 					z=0;
 			else:
 				print("\nRead RTU: unexpected machine responded")
+				printmybyte(returndata)
 		else:
 			print("\nRead RTU: Invalid CRC")
 	else:

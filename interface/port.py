@@ -5,7 +5,7 @@ import os
 
 port_speed = 9600  # this is required
 
-SERIAL="B0013IWJ"
+SERIAL="B00498PC"
 # the device serial number to use.  Run listports.py FIRST to determine the serial number of your device
 # this is important if there are mulitple usb devices connected.
 
