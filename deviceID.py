@@ -36,7 +36,7 @@ returnstring = interface.rs485Devices.IDstring(address)
 
 print("ID string: {}".format(returnstring))
 
-print("stop")
+print("OK")
 interface.rs485Devices.stop()
 
 
