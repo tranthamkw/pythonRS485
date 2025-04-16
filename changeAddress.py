@@ -5,7 +5,7 @@ import re
 import argparse
 import os
 
-import rs485Devices
+import interface.rs485Devices
 
 
 #															#
@@ -23,13 +23,12 @@ args = parser.parse_args()
 oldaddress=int(args.oldaddress,16)
 newaddress=int(args.newaddress,16)
 
-rs485Devices.init()
+interface.rs485Devices.init()
 
-y = rs485Devices.changeAddress(oldaddress,newaddress)
+y = interface.rs485Devices.changeAddress(oldaddress,newaddress)
 
 print(y)
 print("stop")
-rs485Devices.stop()
-
+interface.rs485Devices.stop()
 
 os._exit(0)
