@@ -15,7 +15,7 @@ BASEREGANLG= 0x0D0D
 BASEREGSERVO= 0x0A0A  #also base register for  general purpose digital
 # + 16 for read/write to digital IO
 # + 8 for read/write to TRIS (this sets if digial IO is in or output)
-# +0,+1 servo
+# +0,+1 servo 0 and servo 1
 BASEREG485BRIDGE232= 0x0C0C
 # +32 GPIB
 BASEREGSTEPMTR= 0x0B0B
@@ -27,12 +27,12 @@ BASEREGFN= 0x00F0
 															#
 """
 #  These are the IO boards to interface with
-#	Digital IO board
+#	Digital IO board (done)
 #	Analog in board
 #	Steppermotor board
-#
-#	RS232 bridge
-#	GPIB bridge
+#	Servo board
+#	RS232 bridge (done-ish)
+#	GPIB bridge (done)
 
 
 """
@@ -87,7 +87,8 @@ def changeAddress(old,new):
 
 """
 
-Digital IO cards.  The following is specific to cards with the device ID = GPDIGITALIO
+Digital IO cards.  The following is specific to cards with the
+device ID = GPDIGITALIO or DUAL#SERVO(the two high order bits will be ignored)
 (if this information is sent to another type of device, it will likely be ignored since the base register
 is different for different types of devices.)
 """
@@ -126,8 +127,31 @@ def getRS485DigitalIN(address):
 	else:
 		print("error in get data")
 	return value
+"""
+Dual Servo. Device ID = DUAL#SERVO
+servo = 0 or 1
+position = integer 0 to 8
+"""
+def setRS485ServoPosition(address, servo, position):
+	if (position<0):
+		position = 0
+	if (position > 10):
+		 position = 10
+	servo=servo&0x01
+	y = interface.usbRS485bridge.write_Modbus_RTU(address,BASEREGSERVO+servo,position)
+	return y
 
 
+def getRS485ServoPosition(address,servo):
+	servo=servo&0x01
+	y,returndata = interface.usbRS485bridge.read_Modbus_RTU(address,BASEREGSERVO+servo)
+	value=0
+	if (y==0)and len(returndata)==2:
+		value=(returndata[0]<<8 | returndata[1])
+	else:
+		print("error in get data")
+
+	return value
 
 """
 	RS485 to RS232 bridge card
