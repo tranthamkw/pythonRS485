@@ -1,0 +1,8 @@
+All interface cards are based on Microchip's 16F690 or 18F46K22 microprocessors.
+This directory contains essential code needed to program the cards. 
+
+As of 4/25, all cards are coded in MPLABx and programmed with a PICKIT4
+
+The code in this directory is/are not complete MPLABx projects. There is sufficient
+information posted here that an experience MPLABx user can rebuild and program 
+the microcontroller.  The PIC coded is posted for 'open-source' completeness, and for reference only.
