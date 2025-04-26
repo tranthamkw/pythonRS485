@@ -19,7 +19,11 @@ BASEREGSERVO= 0x0A0A  #also base register for  general purpose digital
 BASEREG485BRIDGE232= 0x0C0C
 # +32 GPIB
 BASEREGSTEPMTR= 0x0B0B
+BASEAUTOBATT=0X0A2A	#<<<---NEW
 BASEREGFN= 0x00F0
+
+
+battery=[]		#<<<---NEW
 
 """															#
  interface layer between main (for my digital or analog board),
@@ -30,7 +34,7 @@ BASEREGFN= 0x00F0
 #	Digital IO board (done)
 #	Analog in board
 #	Steppermotor board
-#	Servo board
+#	Servo board (done)
 #	RS232 bridge (done-ish)
 #	GPIB bridge (done)
 
@@ -39,7 +43,7 @@ BASEREGFN= 0x00F0
 would it be possible to do object oriented programming?  each card is it's own thing?
 the issue is threading and multitasking. only ONE user at a time can access the RS485 bus.
 and the user must wait for a reponse from the remote device before releasing control of the
-usb resource
+USB resource
 
 Also, the following (init and stop) should only be called once in main
 
@@ -47,6 +51,9 @@ Also, the following (init and stop) should only be called once in main
 
 # called at the start of a main
 def init():
+
+	for j in range(9):			#<<<---NEW
+		battery.append(2**j-1)		#<<<---NEW
 	interface.usbRS485bridge.start()
 
 # call this at the end/exit of a main
@@ -76,14 +83,43 @@ def changeAddress(old,new):
 	#consoldating code for the RS485 project puts new address at both [4] and [5]
 	"""
 	one needs to know that old address for this to work.  if we dont know the address of the 
-	board, then hold the 'address-program' button down and use deviceID.py. The pic will remember
+	board, then hold the 'address-program' button down and use deviceID.py. The board will remember
 	the address used as it's own
 
-	This function is inteded to be used in code,AND USED CAREFULLY! Do not change a card's
-	address to another address which belongs to another card.
+	This function is inteded to be used in code,AND USED CAREFULLY! Do not change a board's
+	address to another address which belongs to another board.
 	"""
 	y=interface.usbRS485bridge.write_Modbus_RTU(old,0xFF,new)
 	return y
+
+"""
+				NEW FOR RELAY BATTERY BOX
+"""
+
+def setRS485Battery(address,value):  #<<<---NEW
+	"""
+	ALL OUTPUTS OF RS485 CARD ARE OUTPUTS AND HARDWIRED TO RELAY DRIVERS.
+	There are eight DPST relays. When energized, each will insert a 9V battery in series with the stack.
+	Unenergized is a straight connection
+	The relays are energized in this order for 0,9,18,27,36,45,54,63,72 volts
+	0b00000000 = 0V
+	0b00000001 = 9V
+	0b00000011
+	0b00000111
+	...
+	0b00111111
+	0b01111111 = 63V
+	0b11111111 = 72V
+
+	these are set in array 'battery[]'
+	"""
+	if value<0:
+		value=0
+	if value>8:
+		value=8
+	y = interface.usbRS485bridge.write_Modbus_RTU(address,BASEAUTOBATT+16,battery[value])
+	return y
+
 
 """
 
@@ -99,7 +135,7 @@ def setRS485DigitalOUT(address,value):
 	Setting an "input" to something will not harm, or change the input values.
 	It is fine to have the four available bits some mixture of IN and OUT
 	"""
-	value = value & 0x0F
+	value = value & 0xFF
 	y = interface.usbRS485bridge.write_Modbus_RTU(address,BASEREGSERVO+16,value)
 	return y
 
@@ -110,7 +146,7 @@ def setRS485DigitalIO(address,value):
 	if bit = 1; sets input
 	if bit = 0; sets output
 	"""
-	value = value & 0x0F
+	value = value & 0xFF
 	y = interface.usbRS485bridge.write_Modbus_RTU(address,BASEREGSERVO+8,value)
 	return y
 

@@ -30,16 +30,16 @@ YOU MUST KNOW WHAT YOU ARE DOING
 parser = argparse.ArgumentParser(
 	prog='manualWriteRTU',
 	description='Manually send data to RS485 device <address>, register <register>/nYOU MUST KNOW WHAT YOU,RE DOING!',
-	epilog='e.g. python manualWriteRTU.py a3 06 123')
+	epilog='e.g. python manualWriteRTU.py a3 0c0c 08c1')
 parser.add_argument('address', type=str, help='The address in hex. e.g. A3')
-parser.add_argument('register', type=str, help='The register in hex. e.g. 03')
-parser.add_argument('data', type=int, help='data to send')
+parser.add_argument('register', type=str, help='The register in hex. e.g. 0B0B')
+parser.add_argument('data', type=str, help='data to send in hex. e.g.80C1')
 
 
 args = parser.parse_args()
 address=int(args.address,16)
 register=int(args.register,16)
-mydata=args.data
+mydata=int(args.data,16)
 
 print("address {}\tregister {}\tdata {}".format(address,register,mydata))
 

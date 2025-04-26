@@ -3,35 +3,51 @@ import sys
 import time
 import re
 import os
-
+import argparse
 import interface.rs485Devices
 
 DELAY=0
-DIGIDEVICE=0xD0
+DIGIDEVICE=0xC4
 SERVODEVICE=0xD3
+
 
 # this is a sand pit to test various things before wrapping into a dedicated main script#
 # ++++++++++++++++++++	START MAIN +++++++++++++++++++++++#
 #
 
 
+parser = argparse.ArgumentParser(
+        prog='scanSEE',
+        description='Scans KEPCO power supply from start to stop potential',
+        epilog="e.g. python scanSEE.py <start v> <end v> <step v>")
+parser.add_argument('startv', type=int, help='start volts')
+
+args = parser.parse_args()
+x = args.startv
+
+
 z=0
 
 interface.rs485Devices.init()
-print("getting value")
-z=interface.rs485Devices.getRS485ServoPosition(SERVODEVICE,1)
-print("digital value {}".format(z))
-#time.sleep(DELAY)
 
-for j in range(9):
-	print("setting value {}".format(j))
-	z=interface.rs485Devices.setRS485ServoPosition(SERVODEVICE,1,j)
-#	time.sleep(DELAY)
-	z=interface.rs485Devices.getRS485ServoPosition(SERVODEVICE,1)
-	print("return value {}".format(z))
-#	time.sleep(DELAY)
+for k in range(5):
+	for j in range(9):
+		z=interface.rs485Devices.setRS485Battery(DIGIDEVICE,j)
+		sys.stdout.write("{} ".format(j))
+		sys.stdout.flush()
+		time.sleep(1)
+	sys.stdout.write("\n")
 
-z=interface.rs485Devices.setRS485ServoPosition(SERVODEVICE,1,0)
+	for j in range(8,-1,-1):
+		z=interface.rs485Devices.setRS485Battery(DIGIDEVICE,j)
+		sys.stdout.write("{} ".format(j))
+		sys.stdout.flush()
+		time.sleep(1)
+	sys.stdout.write("\n")
+
+time.sleep(1)
+
+z=interface.rs485Devices.setRS485Battery(DIGIDEVICE,0)
 
 print("OK")
 
