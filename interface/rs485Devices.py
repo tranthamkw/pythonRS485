@@ -99,24 +99,26 @@ def changeAddress(old,new):
 def setRS485Battery(address,value):  #<<<---NEW
 	"""
 	ALL OUTPUTS OF RS485 CARD ARE OUTPUTS AND HARDWIRED TO RELAY DRIVERS.
-	There are eight DPST relays. When energized, each will insert a 9V battery in series with the stack.
-	Unenergized is a straight connection
+	There are eight DPST relays. When energized, each will insert a 9V battery in series with the relay stack.
+	Unenergized is a straight connection.
 	The relays are energized in this order for 0,9,18,27,36,45,54,63,72 volts
-	0b00000000 = 0V
-	0b00000001 = 9V
-	0b00000011
+	OUTVALUE 	Expected battery voltage
+	0b00000000 	= 0V
+	0b00000001 	= 9V
+	0b00000011	= 18V
 	0b00000111
 	...
 	0b00111111
-	0b01111111 = 63V
-	0b11111111 = 72V
+	0b01111111	= 63V
+	0b11111111 	= 72V
 
-	these are set in array 'battery[]'
+	the outvalues are set in array 'battery[]', initialize when init() is called.
 	"""
 	if value<0:
 		value=0
 	if value>8:
 		value=8
+	# we can have on of nine, 0 to 8 possible settings. battery[value] determines the outvalue
 	y = interface.usbRS485bridge.write_Modbus_RTU(address,BASEAUTOBATT+16,battery[value])
 	return y
 

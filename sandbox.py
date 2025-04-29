@@ -35,17 +35,17 @@ for k in range(5):
 		z=interface.rs485Devices.setRS485Battery(DIGIDEVICE,j)
 		sys.stdout.write("{} ".format(j))
 		sys.stdout.flush()
-		time.sleep(1)
+		time.sleep(0.1)
 	sys.stdout.write("\n")
 
 	for j in range(8,-1,-1):
 		z=interface.rs485Devices.setRS485Battery(DIGIDEVICE,j)
 		sys.stdout.write("{} ".format(j))
 		sys.stdout.flush()
-		time.sleep(1)
+		time.sleep(0.1)
 	sys.stdout.write("\n")
 
-time.sleep(1)
+time.sleep(0.1)
 
 z=interface.rs485Devices.setRS485Battery(DIGIDEVICE,0)
 
