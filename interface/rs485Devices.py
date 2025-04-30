@@ -93,7 +93,7 @@ def changeAddress(old,new):
 	return y
 
 """
-				NEW FOR RELAY BATTERY BOX
+				RELAY BATTERY BOX
 """
 
 def setRS485Battery(address,value):  #<<<---NEW
@@ -120,6 +120,79 @@ def setRS485Battery(address,value):  #<<<---NEW
 		value=8
 	# we can have on of nine, 0 to 8 possible settings. battery[value] determines the outvalue
 	y = interface.usbRS485bridge.write_Modbus_RTU(address,BASEAUTOBATT+16,battery[value])
+	return y
+
+"""
+			STEPPER MOTOR
+This is a digital interface between data aquisition computer and a stepper motor. The
+RS485 card handles the operose task of bit-banging the clock/step pulse.
+A steppermotor driver is still required
+
+[DataAqComputer]-----RS485---->[RS485Card]----(pulse & dir)---->[Driver&Powersupply]---->[motor]
+"""
+
+def moveRS485StepperMotor(address, steps, dir):
+	value = steps+(dir<<15);
+	y = interface.usbRS485bridge.write_Modbus_RTU(address,BASEREGSTEPMTR,value)
+	return y
+
+def getRS485StepperMotorSteps(address):
+	#this will return the number of steps remaining in the current, pending
+	#motion.  Return 0 when completed. Use this to check the status of
+	#the current motion.
+
+	y,returndata = interface.usbRS485bridge.read_Modbus_RTU(address,BASEREGSTEPMTR)
+	steps=0
+	if (y==0)and len(returndata)==2:
+		steps=(returndata[0]<<8 | returndata[1])
+	else:
+		print("error in get steps")
+	return steps
+
+def setRS485StepperMotorSpeed(address,speed):
+	#speed determines the frequency of the pulses sent to the
+	#steppermotor driver. To slow and the motion is rough, but less chance of
+	#loosing steps. Too fast, the motion is likely to loose steps.
+	#the optimum setting will depend on the mechanical details
+	#of the finial implimentation. 
+	y=-1
+	if ((speed>49)and(speed<251)):
+		y = interface.usbRS485bridge.write_Modbus_RTU(address,BASEREGSTEPMTR+4,speed)
+	return y
+
+def getRS485StepperMotorSpeed(address):
+	y,returndata = interface.usbRS485bridge.read_Modbus_RTU(address,BASEREGSTEPMTR+4)
+	speed=0
+	if (y==0)and len(returndata)==2:
+		speed=(returndata[0]<<8 | returndata[1])
+	else:
+		print("error in get steps")
+	return speed
+
+def setRS485StepperMotorStepsRev(address, stepsperrev):
+# used internally by the PIC to check for homing errors.
+	y=-1
+	if (stepsperrev>0):
+		y = interface.usbRS485bridge.write_Modbus_RTU(address,BASEREGSTEPMTR+1,stepsperrev)
+	return y
+
+def getRS485StepperMotorStepsRev(address):
+# used internally by the PIC to check for homing errors. not used for anything else
+	y,returndata = interface.usbRS485bridge.read_Modbus_RTU(address,BASEREGSTEPMTR+1)
+	spr=0
+	if (y==0)and len(returndata)==2:
+		spr=(returndata[0]<<8 | returndata[1])
+	else:
+		print("error in get steps")
+	return spr
+
+def findHomeRS485StepperMotor(address, state, direction):
+	#// state is the state the pic is looking for, direction is the direction to move the motor
+	#// state = 0 or 1
+	#// direction = 0 or 1
+	command = 0x0001 | ((state&0x0001) <<1) | ((direction&0x0001)<<2)
+	#//printf("%d \n",command);
+	y = interface.usbRS485bridge.write_Modbus_RTU(address,BASEREGSTEPMTR+16,command)
 	return y
 
 

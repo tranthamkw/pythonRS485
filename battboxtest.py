@@ -7,7 +7,8 @@ import argparse
 import interface.rs485Devices
 
 DELAY=0
-DIGIDEVICE=0xD9
+DIGIDEVICE=0xC4
+SERVODEVICE=0xD3
 
 
 # this is a sand pit to test various things before wrapping into a dedicated main script#
@@ -23,24 +24,32 @@ parser.add_argument('startv', type=int, help='start volts')
 
 args = parser.parse_args()
 x = args.startv
+
+
 z=0
+
 interface.rs485Devices.init()
 
-speed=interface.rs485Devices.getRS485StepperMotorSpeed(DIGIDEVICE)
-time.sleep(0.05)
-spr=interface.rs485Devices.getRS485StepperMotorStepsRev(DIGIDEVICE)
-print("Speed {}\tSPR {}".format(speed,spr))
+for k in range(5):
+	for j in range(9):
+		z=interface.rs485Devices.setRS485Battery(DIGIDEVICE,j)
+		sys.stdout.write("{} ".format(j))
+		sys.stdout.flush()
+#		time.sleep(0.1)
+	sys.stdout.write("\n")
 
-interface.rs485Devices.moveRS485StepperMotor(DIGIDEVICE,1500,0)
+	for j in range(8,-1,-1):
+		z=interface.rs485Devices.setRS485Battery(DIGIDEVICE,j)
+		sys.stdout.write("{} ".format(j))
+		sys.stdout.flush()
+#		time.sleep(0.1)
+	sys.stdout.write("\n")
 
-steps=interface.rs485Devices.getRS485StepperMotorSteps(DIGIDEVICE)
+time.sleep(0.1)
 
-while (steps>0):
-	print(steps)
-	steps=interface.rs485Devices.getRS485StepperMotorSteps(DIGIDEVICE)
-
-
+z=interface.rs485Devices.setRS485Battery(DIGIDEVICE,0)
 
 print("OK")
+
 interface.rs485Devices.stop()
 os._exit(0)
