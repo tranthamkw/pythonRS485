@@ -19,19 +19,25 @@ parser = argparse.ArgumentParser(
         prog='scanSEE',
         description='Scans KEPCO power supply from start to stop potential',
         epilog="e.g. python scanSEE.py <start v> <end v> <step v>")
-parser.add_argument('startv', type=int, help='start volts')
+parser.add_argument('steps',type=int,help='numsteps')
+parser.add_argument('dir', type=int, help='start volts')
+parser.add_argument('spd',type=int,help='speed')
 
 args = parser.parse_args()
-x = args.startv
+steps=args.steps
+x = args.dir
+spd=args.spd
+
 z=0
 interface.rs485Devices.init()
 
-speed=interface.rs485Devices.getRS485StepperMotorSpeed(DIGIDEVICE)
+
+interface.rs485Devices.setRS485StepperMotorSpeed(DIGIDEVICE,spd)
+
 time.sleep(0.05)
 spr=interface.rs485Devices.getRS485StepperMotorStepsRev(DIGIDEVICE)
-print("Speed {}\tSPR {}".format(speed,spr))
 
-interface.rs485Devices.moveRS485StepperMotor(DIGIDEVICE,1500,0)
+interface.rs485Devices.moveRS485StepperMotor(DIGIDEVICE,steps,x)
 
 steps=interface.rs485Devices.getRS485StepperMotorSteps(DIGIDEVICE)
 
