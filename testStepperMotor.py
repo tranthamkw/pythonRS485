@@ -7,7 +7,7 @@ import argparse
 import interface.rs485Devices
 
 DELAY=0
-DIGIDEVICE=0xD9
+DIGIDEVICE=0xD0
 
 
 # this is a sand pit to test various things before wrapping into a dedicated main script#
@@ -37,8 +37,9 @@ interface.rs485Devices.setRS485StepperMotorSpeed(DIGIDEVICE,spd)
 time.sleep(0.05)
 spr=interface.rs485Devices.getRS485StepperMotorStepsRev(DIGIDEVICE)
 
-interface.rs485Devices.moveRS485StepperMotor(DIGIDEVICE,steps,x)
 
+
+interface.rs485Devices.moveRS485StepperMotor(DIGIDEVICE,steps,x)
 steps=interface.rs485Devices.getRS485StepperMotorSteps(DIGIDEVICE)
 
 print("Number of steps to go before move complete")
