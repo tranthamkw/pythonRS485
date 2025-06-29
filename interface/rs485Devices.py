@@ -96,7 +96,7 @@ def changeAddress(old,new):
 				RELAY BATTERY BOX
 """
 
-def setRS485Battery(address,value):  #<<<---NEW
+def setRS485Battery(address,value):
 	"""
 	ALL OUTPUTS OF RS485 CARD ARE OUTPUTS AND HARDWIRED TO RELAY DRIVERS.
 	There are eight DPST relays. When energized, each will insert a 9V battery in series with the relay stack.
@@ -184,6 +184,16 @@ def getRS485StepperMotorStepsRev(address):
 		spr=(returndata[0]<<8 | returndata[1])
 	else:
 		print("error in get steps")
+	return spr
+
+def getRS485StepperMotorHomeState(address):
+# used internally by the PIC to check for homing errors. not used for anything else
+	y,returndata = interface.usbRS485bridge.read_Modbus_RTU(address,BASEREGSTEPMTR+2)
+	spr=0
+	if (y==0)and len(returndata)==2:
+		spr=(returndata[0]<<8 | returndata[1])
+	else:
+		print("error in get home")
 	return spr
 
 def findHomeRS485StepperMotor(address, state, direction):
