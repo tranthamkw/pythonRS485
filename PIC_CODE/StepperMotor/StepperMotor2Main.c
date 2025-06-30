@@ -30,7 +30,7 @@ BASEREG+1: command/macro to execute. such as automatic homing.
 
 RA4 = direction, output --> TTL signal to driver.
 RA5 = clock pulses, output --> TTL signal to driver
-RC4 = homing input  <- user must provide a TTL compatible signal 
+RB4 = homing input  <- user must provide a TTL compatible signal 
 
 */
 
@@ -60,8 +60,9 @@ unsigned int pulseCount;
 unsigned int pulseTime = 100;
 unsigned char findHome;
 unsigned short homePulseCount=0;
-unsigned int pulsePerRev=100;
+unsigned int pulsePerRev=100;// some default value. this can be change by writing to appropriate registers
 unsigned char activestate=1;
+unsigned char homestate=0;
 unsigned char homedir=0;
 char outText[24];
 
@@ -91,9 +92,10 @@ void updateDisplayStatus(void){
 void __interrupt() Timer0_ISR(void){
   if(T0IF) {	 
     if (findHome==1) {
-		findHome=(RC4^activestate);
+		findHome=(RB4^homestate); // RB4 XOR active state
 		RA4=(__bit)homedir; //homing direction
 	    pulseCount=1;
+        homePulseCount=0;
 	
    }
 	if (homePulseCount>pulsePerRev){
@@ -180,19 +182,19 @@ Smallest usable value of TMR0 is 1. Largest is 254.
 /*
   RA4 = direction, output
 RA5 = clock pulses, output
-RC4 = homing input
+RB4 = homing input
   */
   
 TRISA4=0; //output
 TRISA5=0;
-TRISC4=1; //input 
+TRISB4=1; //input 
         
 strlength=0;
 findHome = 0;
 error=0;
 pulseCount=0;
 homePulseCount=0;
-RA5=(__bit)activestate;
+RB4=(__bit)activestate;
 
 
 
@@ -236,9 +238,9 @@ RA5=(__bit)activestate;
 						error = 0;
 						break;
 					case (BASEREG+16): // macro to find home.  data[5] contains bit definitions for which direction to move motor and what state to look for.
-						findHome=(unsigned char)(data[5]&0b00000001);
-						activestate=(unsigned char)(data[5]&0b00000010)>>1;
-						homedir=(unsigned char)(data[5]&0b00000100)>>2;
+						findHome=(unsigned char)(data[5]&0b00000001); // find home true
+						homestate=(unsigned char)(data[5]&0b00000010)>>1;// what state we're looking for
+						homedir=(unsigned char)(data[5]&0b00000100)>>2; // direction to move motor to find home
 						strlength=6;
 						RS485_Write_Data(data,strlength);
 						error = 0;
@@ -289,7 +291,7 @@ RA5=(__bit)activestate;
 					case (BASEREG+2): 
 						data[2]=2;  //number of bytes to follow of data
 						data[3]=0x00; //MSB first
-						data[4]=!(RC4^activestate); // then LSB
+						data[4]=!(RB4^activestate); // then LSB
 						strlength=5;
 						RS485_Write_Data(data,strlength);
 						error =0;
