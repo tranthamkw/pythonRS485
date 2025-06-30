@@ -1,6 +1,7 @@
 essential code for steppermotor microcontroller
 
-connection to V# boards:
+connection to V3 boards:
+(RED with big N on the back)
 Connector P3, left to right
 [ ] , () , () , () , () , (.)
 +5Vout, CLK out, DIR out, n/a, HOME in, GND
