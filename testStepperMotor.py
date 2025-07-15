@@ -8,7 +8,7 @@ import interface.rs485Devices
 
 DELAY=0
 DIGIDEVICE=0xD0
-HOMESTATE=0
+HOMESTATE=1
 
 # this is a sand pit to test various things before wrapping into a dedicated main script#
 # ++++++++++++++++++++	START MAIN +++++++++++++++++++++++#
@@ -44,7 +44,7 @@ time.sleep(0.01)
 # device (where the home sensor is). This is only needed if one intends to find home at somepoint.
 # This setting is important for the homeing routine.  If the driver exceeds
 # this number of steps whilst trying to find home, it will stop.
-interface.rs485Devices.setRS485StepperMotorStepsRev(DIGIDEVICE,200)
+interface.rs485Devices.setRS485StepperMotorStepsRev(DIGIDEVICE,1500)
 time.sleep(0.01)
 
 
@@ -54,8 +54,8 @@ print("Finding home")
 state=interface.rs485Devices.getRS485StepperMotorHomeState(DIGIDEVICE)
 time.sleep(0.01)
 if (state==HOMESTATE):
-	print("Already home. Reversing 50 steps")
-	interface.rs485Devices.moveRS485StepperMotor(DIGIDEVICE,50,0) # note direction. this needs to
+	print("Already home. Reversing 150 steps")
+	interface.rs485Devices.moveRS485StepperMotor(DIGIDEVICE,150,0) # note direction. this needs to
 # be opposite of that used for 'findHome'
 	steps=interface.rs485Devices.getRS485StepperMotorSteps(DIGIDEVICE)
 	#Dont move on until this move is complete
@@ -82,7 +82,7 @@ n=0
 while ((state!=HOMESTATE)&(n<10)):
 	sys.stdout.write(".")
 	state=interface.rs485Devices.getRS485StepperMotorHomeState(DIGIDEVICE)
-	time.sleep(0.01)
+	time.sleep(0.5)
 	n+=1
 	sys.stdout.flush()
 
@@ -104,11 +104,11 @@ time.sleep(0.01)
 # YOU DON'T HAVE TO DO THIS. one could sleep, process something else in the meantime, THEN check the status.
 steps=interface.rs485Devices.getRS485StepperMotorSteps(DIGIDEVICE)
 print("Number of steps to go before move complete")
-time.sleep(0.02)
+time.sleep(0.2)
 while (steps>0):
 	print(steps)
 	steps=interface.rs485Devices.getRS485StepperMotorSteps(DIGIDEVICE)
-	time.sleep(0.02)
+	time.sleep(0.2)
 
 
 print("OK- move complete")

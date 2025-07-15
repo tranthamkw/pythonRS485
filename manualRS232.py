@@ -27,7 +27,7 @@ interface.rs485Devices.init()
 
 print("Command string: {}".format(cmdstr))
 
-returnstring=interface.rs485Devices.writeRS232(address, cmdstr,0x0D,True)
+returnstring=interface.rs485Devices.writeRS232(address, cmdstr,0x0D)
 
 print(returnstring)
 

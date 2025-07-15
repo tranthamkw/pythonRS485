@@ -156,7 +156,7 @@ def setRS485StepperMotorSpeed(address,speed):
 	#the optimum setting will depend on the mechanical details
 	#of the finial implimentation. 
 	y=-1
-	if ((speed>49)and(speed<251)):
+	if ((speed>19)and(speed<251)):
 		y = interface.usbRS485bridge.write_Modbus_RTU(address,BASEREGSTEPMTR+4,speed)
 	return y
 
