@@ -4,6 +4,7 @@ import sys
 import time
 import re
 import os
+import math
 import argparse
 # on the raspi
 
@@ -20,6 +21,19 @@ def getParameter(inputtext,searchtext):
 		exit(0)
 	return x
 
+
+def calcFourier(inputx,inputy,numpts,dx,period,m):
+	sumCos=0.0
+	sumSin=0.0
+	k = 2.0*math.pi/float(period)
+	for j in range(numpts):
+		sumCos+=inputy[j]*math.cos(float(m)*k*inputx[j])*float(dx)
+		sumSin+=inputy[j]*math.sin(float(m)*k*inputx[j])*float(dx)
+
+	a=2.0*sumCos/float(period)
+	b=2.0*sumSin/float(period)
+
+	return a,b
 
 
 # ++++++++++++++++++++	START MAIN +++++++++++++++++++++++#
@@ -46,9 +60,9 @@ with open(filename,mode='r') as f:
 	stepsPerRev = getParameter(f.readline(),"revolution")
 	ds = getParameter(f.readline(),"Step size")
 	n = getParameter(f.readline(),"data points")
-	print(stepsPerRev)
-	print(ds)
-	print(n)
+#	print(stepsPerRev)
+#	print(ds)
+#	print(n)
 
 	angle=[0.0 for x in range(n)]
 	signal = [0.0 for x in range(n)]
@@ -67,8 +81,11 @@ with open(filename,mode='r') as f:
 		line=f.readline()
 
 
-for j in range(n):
-	print("{}\t{}".format(angle[j],signal[j]))
+a2,b2=calcFourier(angle,signal,n,ds,stepsPerRev,2)
+a4,b4=calcFourier(angle,signal,n,ds,stepsPerRev,4)
+a0,b0=calcFourier(angle,signal,n,ds,stepsPerRev,0)
 
+print("A0\t\tA2\t\tB2\t\tA4\t\tB4")
+print("{:.4}\t\t{:.4}\t\t{:.4}\t\t{:.4}\t\t{:.4}".format(a0,a2,b2,a4,b4))
 
 os._exit(0)
