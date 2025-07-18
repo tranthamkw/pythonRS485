@@ -86,6 +86,12 @@ a4,b4=calcFourier(angle,signal,n,ds,stepsPerRev,4)
 a0,b0=calcFourier(angle,signal,n,ds,stepsPerRev,0)
 
 print("A0\t\tA2\t\tB2\t\tA4\t\tB4")
-print("{:.4}\t\t{:.4}\t\t{:.4}\t\t{:.4}\t\t{:.4}".format(a0,a2,b2,a4,b4))
+print("{:.4}\t{:.4}\t{:.4}\t{:.4}\t{:.4}".format(a0,a2,b2,a4,b4))
+
+c2=math.sqrt(a2**2 + b2**2)
+theta2=math.atan2(b2,a2)*180.0/math.pi
+
+print("\nA0/2\t\tC2\t\ttheta2")
+print("{:.4}\t{:.4}\t{:.4}".format(a0/2,c2,theta2))
 
 os._exit(0)

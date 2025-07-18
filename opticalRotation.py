@@ -15,18 +15,18 @@ DIGIDEVICE=0xD0 # the steppermotor
 SRS830 = 0xC5 #photodetector/amplfier -> SRS830 AD input 2
 
 
-DELAY=0.05
+DELAY=0.1
 #standard delay between calls to the rs485 buss
 HOMESTATE=1
 STEPSPERREV=1500
-STEPSIZE=20
+STEPSIZE=25
 
 #STEPSPERREV / STEPSIZE must be an integer, otherwise we will rotate more than one rev
 
 def findHome(address,l,dx,hs):
 	# first get home state
 	state=interface.rs485Devices.getRS485StepperMotorHomeState(address)
-	time.sleep(0.02)
+	time.sleep(DELAY)
 	if (state==hs):
 		rx=int(l/20)
 		print("Already home. Reversing {} steps".format(rx))
@@ -37,25 +37,25 @@ def findHome(address,l,dx,hs):
 			sys.stdout.write(".")
 			sys.stdout.flush()
 			steps=interface.rs485Devices.getRS485StepperMotorSteps(address)
-			time.sleep(0.02)
+			time.sleep(DELAY)
 
 	sys.stdout.write("\nSearching for home...")
 	interface.rs485Devices.findHomeRS485StepperMotor(address,hs,1)
-	time.sleep(0.02)
+	time.sleep(DELAY)
 	"""
 	This next loop needs to have some error trapping.  IF the motor never 
 	"""
 	state=interface.rs485Devices.getRS485StepperMotorHomeState(address)
-	time.sleep(0.02)
+	time.sleep(DELAY)
 	n=0
 	while ((state!=hs)&(n<30)):
 		sys.stdout.write(".")
 		state=interface.rs485Devices.getRS485StepperMotorHomeState(address)
-		time.sleep(0.02)
+		time.sleep(DELAY)
 		n+=1
 		sys.stdout.flush()
 	state=interface.rs485Devices.getRS485StepperMotorHomeState(address)
-	time.sleep(0.02)
+	time.sleep(DELAY)
 	if (state!=hs):
 		print("\nHoming error")
 		exit(-1)
