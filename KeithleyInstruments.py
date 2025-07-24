@@ -11,7 +11,8 @@ import interface.rs485Devices
 
 def iniK485(rs485address,gpibaddress):
 
-	y=interface.rs485Devices.writeGPIB(rs485address,gpibaddress,'G1R0X',0x0D)
+	y=interface.rs485Devices.writeGPIB(rs485address,gpibaddress,'G1X',0x0D)
+#	y=interface.rs485Devices.writeGPIB(rs485address,gpibaddress,'G1R0X',0x0D)
 
 	return y
 
