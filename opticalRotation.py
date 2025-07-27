@@ -137,10 +137,9 @@ j=0
 angle=[]
 pmt=[]
 volts1=[]
+time.sleep(deltaT)
 
 for j in range(0,numrevs*STEPSPERREV,stepsize):
-	interface.rs485Devices.moveRS485StepperMotor(DIGIDEVICE,stepsize,0)
-	time.sleep(deltaT)
 # time to allow for signal to settle.
 # get photometer reading.  the following is supposed to be faster than individual calls 
 	x1,x2,x3,x4 = SRSinstruments.getSRS830AuxIn(SRS830)
@@ -154,11 +153,12 @@ for j in range(0,numrevs*STEPSPERREV,stepsize):
 		time.sleep(DELAY)
 		z=KeithleyInstruments.readK485(K485RS485,K485GPIB)
 
-	time.sleep(DELAY)
 	print("{}\t{}\t{}".format(j,z,x1))
 	angle.append(j)
 	pmt.append(z)
 	volts1.append(x1)
+	interface.rs485Devices.moveRS485StepperMotor(DIGIDEVICE,stepsize,0)
+	time.sleep(deltaT)
 
 
 
@@ -172,9 +172,9 @@ print("{:.4}\t{:.4}\t{:.4}\t{:.4}\t{:.4}".format(a0/2,a2,b2,a4,b4))
 
 c2=math.sqrt(a2**2 + b2**2)
 theta2=math.atan2(b2,a2)*180.0/math.pi
-print("\nFourier coefficients cn Cos(nkx + thetan)")
+print("\nFourier coefficients cn Cos(nkx + phi_n)")
 print("A0/2\t\tC2\t\ttheta2")
-print("{:.4}\t\t{:.4}\t\t{:.4}".format(a0/2,c2,theta2))
+print("{:.4}\t\t{:.4}\t\t{:.5}".format(a0/2,c2,theta2))
 
 #calculate noise variance
 variance = 0.0
@@ -184,9 +184,8 @@ for j in range(n):
 	variance+=(pmt[j]-ffit)**2
 variance = variance/float(n-5)
 variance =math.sqrt(variance)
-print("\n Variance = {:.5}".format(variance))
+print("\n STDEV = {:.5}".format(variance))
 
-print("\n Variance/A0 = {:.5}".format(variance/a0))
 print("Saving to file: {}".format(filename))
 
 with open(filename,mode='w') as f:
@@ -199,10 +198,10 @@ with open(filename,mode='w') as f:
 	f.write("Fourier Coefficients\n")
 	f.write("A0,A2,B2,A4,B4\n")
 	f.write("{},{},{},{},{}\n".format(a0,a2,b2,a4,b4))
-	f.write("Fourier coefficients cn Cos(nkx + theta_n)\n")
+	f.write("Fourier coefficients Cn Cos(nkx + phi_n)\n")
 	f.write("A0/2,C2,theta2\n")
 	f.write("{},{},{}\n".format(a0/2,c2,theta2))
-	f.write("Variance,{}\n".format(variance))
+	f.write("STDEV=Sqrt(Sum[(xi - fit)^2]/(n-5)),{}\n".format(variance))
 	f.write("steps,intensity,voltsAD1\n")
 	for j in range(len(pmt)):
 		f.write("{},{},{}\n".format(angle[j],pmt[j],volts1[j]))
