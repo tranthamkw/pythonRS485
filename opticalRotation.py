@@ -124,8 +124,8 @@ print("Found "+returnstring)
 filename = fileIO.calculateFilename('OP_') #auto filename
 
 # lets find home
-print("Finding polarizer home")
-findHome(DIGIDEVICE,STEPSPERREV,stepsize,HOMESTATE)
+#print("Finding polarizer home")
+#findHome(DIGIDEVICE,STEPSPERREV,stepsize,HOMESTATE)
 
 interface.rs485Devices.setRS485StepperMotorSpeed(DIGIDEVICE,20)
 time.sleep(DELAY)
@@ -182,6 +182,7 @@ k = 2.0*math.pi/float(STEPSPERREV)
 for j in range(n):
 	ffit=a0/2+a2*math.cos(2.0*k*angle[j])+b2*math.sin(2.0*k*angle[j])+a4*math.cos(4.0*k*angle[j])+b4*math.sin(4.0*k*angle[j])
 	variance+=(pmt[j]-ffit)**2
+
 variance = variance/float(n-5)
 variance =math.sqrt(variance)
 print("\n STDEV = {:.5}".format(variance))
