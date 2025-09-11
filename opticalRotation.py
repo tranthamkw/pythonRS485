@@ -110,9 +110,9 @@ time.sleep(DELAY)
 
 
 
-print("initalize K485")
-KeithleyInstruments.iniK485(K485RS485,K485GPIB)
-time.sleep(DELAY)
+#print("initalize K485")
+#KeithleyInstruments.iniK485(K485RS485,K485GPIB)
+#time.sleep(DELAY)
 
 print("initialize RS830")
 SRSinstruments.initSRS830(SRS830)
@@ -136,27 +136,34 @@ print("take data")
 j=0
 angle=[]
 pmt=[]
-volts1=[]
+
+angle=[]
+
 time.sleep(deltaT)
 
+print("j\tR\tphi")
 for j in range(0,numrevs*STEPSPERREV,stepsize):
 # time to allow for signal to settle.
 # get photometer reading.  the following is supposed to be faster than individual calls 
-	x1,x2,x3,x4 = SRSinstruments.getSRS830AuxIn(SRS830)
+# no longer use back pannel inputs
+#	x1,x2,x3,x4 = SRSinstruments.getSRS830AuxIn(SRS830)
 	time.sleep(DELAY)
 
-	if (x1==0):
-		time.sleep(DELAY)
-		x1,x2,x3,x4 = SRSinstruments.getSRS830AuxIn(SRS830)
-	z=KeithleyInstruments.readK485(K485RS485,K485GPIB)
+#	if (x1==0):
+#		time.sleep(DELAY)
+#		x1,x2,x3,x4 = SRSinstruments.getSRS830AuxIn(SRS830)
+	z,phi,f=SRSinstruments.getSRS830Data(SRS830)
+#	z=KeithleyInstruments.readK485(K485RS485,K485GPIB)
 	if (z==0):
 		time.sleep(DELAY)
-		z=KeithleyInstruments.readK485(K485RS485,K485GPIB)
+		z,phi,f=SRSinstruments.getSRS830Data(SRS830)
+	#	z=KeithleyInstruments.readK485(K485RS485,K485GPIB)
 
-	print("{}\t{}\t{}".format(j,z,x1))
+	print("{}\t{}\t{}".format(j,z,phi))
 	angle.append(j)
 	pmt.append(z)
-	volts1.append(x1)
+	angle.append(phi)
+
 	interface.rs485Devices.moveRS485StepperMotor(DIGIDEVICE,stepsize,0)
 	time.sleep(deltaT)
 
@@ -203,9 +210,9 @@ with open(filename,mode='w') as f:
 	f.write("A0/2,C2,theta2\n")
 	f.write("{},{},{}\n".format(a0/2,c2,theta2))
 	f.write("STDEV=Sqrt(Sum[(xi - fit)^2]/(n-5)),{}\n".format(variance))
-	f.write("steps,intensity,voltsAD1\n")
+	f.write("steps,intensity R,angle PHI\n")
 	for j in range(len(pmt)):
-		f.write("{},{},{}\n".format(angle[j],pmt[j],volts1[j]))
+		f.write("{},{},{}\n".format(angle[j],pmt[j],angle[j]))
 
 print("\nOK")
 interface.rs485Devices.stop()
