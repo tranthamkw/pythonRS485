@@ -7,7 +7,7 @@ import argparse
 import interface.rs485Devices
 
 DELAY=0
-DIGIDEVICE=0xD0
+DIGIDEVICE=0xD7
 HOMESTATE=1
 
 # this is a sand pit to test various things before wrapping into a dedicated main script#
@@ -47,7 +47,7 @@ time.sleep(0.01)
 interface.rs485Devices.setRS485StepperMotorStepsRev(DIGIDEVICE,1500)
 time.sleep(0.01)
 
-
+"""
 # lets find home
 print("Finding home")
 # first get home state
@@ -70,11 +70,13 @@ interface.rs485Devices.findHomeRS485StepperMotor(DIGIDEVICE,HOMESTATE,1)#note di
 time.sleep(0.1)
 
 """
+"""
 This next loop needs to have some error trapping.  IF the motor never 
 finds home, or we're looking for the wrong state, or
 the home-wiring connection gets broken, or TJG walks into the lab, or ....  this will go forever.
 
 So i put Put a hard limit on the number of times we check
+"""
 """
 state=interface.rs485Devices.getRS485StepperMotorHomeState(DIGIDEVICE)
 time.sleep(0.01)
@@ -94,6 +96,7 @@ if (state!=HOMESTATE):
 	exit(-1)
 else:
 	print("\n Home found")
+"""
 
 # Now lets make the requested move
 print("Making the requested move of {} steps".format(requestSteps))

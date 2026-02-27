@@ -15,7 +15,7 @@ import fileIO  # There is an 'automatic' file-namer, based on time of day. There
 
 
 ## but we need the RS485<-->RS232 bridge RS485 address.
-SRS830 = 0xC5
+SRS830 = 0xC7
 
 DELAY=0.1
 
@@ -28,23 +28,25 @@ parser = argparse.ArgumentParser(
 	prog='settimeout',
 	description='sets time out for a RS485-RS232 bridge',
 	epilog="e.g. python settimeout.py <time>")
+parser.add_argument('address',type=str,help='address')
 parser.add_argument('thyme', type=int, help='time')
 
 args = parser.parse_args()
+address=int(args.address,16)
 t = args.thyme
 #do not name variable time.  reserved
 
 interface.rs485Devices.init()
 
-timeout=interface.rs485Devices.getRS485BridgeTimeout(SRS830)
+timeout=interface.rs485Devices.getRS485BridgeTimeout(address)
 time.sleep(DELAY)
 print("Current timeout {}".format(timeout))
 
 print("Setting timeout to {}".format(t))
-interface.rs485Devices.setRS485BridgeTimeout(SRS830,t)
+interface.rs485Devices.setRS485BridgeTimeout(address,t)
 time.sleep(DELAY)
 
-timeout=interface.rs485Devices.getRS485BridgeTimeout(SRS830)
+timeout=interface.rs485Devices.getRS485BridgeTimeout(address)
 time.sleep(DELAY)
 print("New timeout {}".format(timeout))
 

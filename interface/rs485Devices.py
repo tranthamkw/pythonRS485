@@ -256,9 +256,9 @@ position = integer 0 to 8
 def setRS485ServoPosition(address, servo, position):
 	if (position<0):
 		position = 0
-	if (position > 10):
-		 position = 10
-	servo=servo&0x01
+	if (position > 8):
+		 position = 8
+	servo = servo & 0x01
 	y = interface.usbRS485bridge.write_Modbus_RTU(address,BASEREGSERVO+servo,position)
 	return y
 

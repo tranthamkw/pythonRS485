@@ -134,10 +134,10 @@ time.sleep(DELAY)
 # take data
 print("take data")
 j=0
-angle=[]
+LPangle=[]
 pmt=[]
 
-angle=[]
+phiangle=[]
 
 time.sleep(deltaT)
 
@@ -160,9 +160,9 @@ for j in range(0,numrevs*STEPSPERREV,stepsize):
 	#	z=KeithleyInstruments.readK485(K485RS485,K485GPIB)
 
 	print("{}\t{}\t{}".format(j,z,phi))
-	angle.append(j)
+	LPangle.append(j)
 	pmt.append(z)
-	angle.append(phi)
+	phiangle.append(phi)
 
 	interface.rs485Devices.moveRS485StepperMotor(DIGIDEVICE,stepsize,0)
 	time.sleep(deltaT)
@@ -170,9 +170,9 @@ for j in range(0,numrevs*STEPSPERREV,stepsize):
 
 
 n=len(pmt)
-a2,b2=calcFourier(angle,pmt,n,stepsize,STEPSPERREV,numrevs,2)
-a4,b4=calcFourier(angle,pmt,n,stepsize,STEPSPERREV,numrevs,4)
-a0,b0=calcFourier(angle,pmt,n,stepsize,STEPSPERREV,numrevs,0)
+a2,b2=calcFourier(LPangle,pmt,n,stepsize,STEPSPERREV,numrevs,2)
+a4,b4=calcFourier(LPangle,pmt,n,stepsize,STEPSPERREV,numrevs,4)
+a0,b0=calcFourier(LPangle,pmt,n,stepsize,STEPSPERREV,numrevs,0)
 print("Fourier coefficients an Cos(nkx) bn Sin(nkx)")
 print("A0/2\t\tA2\t\tB2\t\tA4\t\tB4")
 print("{:.4}\t{:.4}\t{:.4}\t{:.4}\t{:.4}".format(a0/2,a2,b2,a4,b4))
@@ -187,7 +187,7 @@ print("{:.4}\t\t{:.4}\t\t{:.5}".format(a0/2,c2,theta2))
 variance = 0.0
 k = 2.0*math.pi/float(STEPSPERREV)
 for j in range(n):
-	ffit=a0/2+a2*math.cos(2.0*k*angle[j])+b2*math.sin(2.0*k*angle[j])+a4*math.cos(4.0*k*angle[j])+b4*math.sin(4.0*k*angle[j])
+	ffit=a0/2+a2*math.cos(2.0*k*LPangle[j])+b2*math.sin(2.0*k*LPangle[j])+a4*math.cos(4.0*k*LPangle[j])+b4*math.sin(4.0*k*LPangle[j])
 	variance+=(pmt[j]-ffit)**2
 
 variance = variance/float(n-5)
@@ -212,7 +212,7 @@ with open(filename,mode='w') as f:
 	f.write("STDEV=Sqrt(Sum[(xi - fit)^2]/(n-5)),{}\n".format(variance))
 	f.write("steps,intensity R,angle PHI\n")
 	for j in range(len(pmt)):
-		f.write("{},{},{}\n".format(angle[j],pmt[j],angle[j]))
+		f.write("{},{},{}\n".format(LPangle[j],pmt[j],phiangle[j]))
 
 print("\nOK")
 interface.rs485Devices.stop()

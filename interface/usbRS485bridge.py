@@ -6,8 +6,8 @@ import serial
 #import os
 import threading
 
-TIMEOUT=30
-DELAY=0.2
+TIMEOUT=160
+DELAY=0.3
 #
 # interface layer with a "waveshare" industrial USB<-->RS485 device
 # https://www.amazon.com/dp/B081MB6PN2
@@ -215,6 +215,8 @@ def write_232_StringRTU(address,reg, writestring,terminator):
 # debugging
 #	sys.stdout.write("Tx:")
 #	printmybyte(cmd)
+#	sys.stdout.write("{}".format(cmd))
+#	sys.stdout.write("\n")
 
 	bridge.write(cmd)
 	status=0
@@ -223,15 +225,20 @@ def write_232_StringRTU(address,reg, writestring,terminator):
 	if True:
 		rtnData=readDevice()
 
-#	sys.stdout.write("Rx:")
-#	printmybyte(rtnData)
+#		sys.stdout.write("Rx:")
+		#printmybyte(rtnData)
+#		sys.stdout.write("{}".format(rtnData))
+#		sys.stdout.write("\n")
 
 		status=1
 		if(len(rtnData)>0):
-			if not (len(rtnData)==rtnData[2]+5):
-				print("Unexpected number of return bytes")
-				print("rtnData[2]= {}".format(rtnData[2]))
-				print("len(rtnData)= {}".format(len(rtnData)))
+			try:
+				if not (len(rtnData)==rtnData[2]+5):
+					print("Unexpected number of return bytes")
+					print("rtnData[2]= {}".format(rtnData[2]))
+					print("len(rtnData)= {}".format(len(rtnData)))
+			except IndexError:
+				print("indexerror")
 
 			if(validateRTU(rtnData)):
 				if (not (rtnData[1] & 0x80)):

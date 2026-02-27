@@ -104,6 +104,15 @@ def initSRS830(address):
 
 	0x0D is the terminator required by the SRS830
 	"""
+
+##add time out for the 485 <-> 232 interface board. this timeout is the time to wait for a response from 
+# the SRS830.  requests for data from the 830 tend to take longer than outher instruments. 
+# 120 works but set to 160 to ensure enough time
+	interface.rs485Devices.setRS485BridgeTimeout(address,160)
+	time.sleep(0.2)
+# once the above is set, it doesnot need to be reset except for hard power cycle.
+# now start sending data out to the SRS830
+
 	cmdData='OUTX0;OFLT9;PHAS0;RMOD2'
 	interface.rs485Devices.writeRS232(address, cmdData,0x0D)
 	cmdData='DDEF1,1,0;DDEF2,1,0;RSLP1;HARM1'
