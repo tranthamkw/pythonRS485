@@ -15,7 +15,7 @@ import fileIO  # There is an 'automatic' file-namer, based on time of day. There
 
 
 DIGIDEVICE=0xD0 # the steppermotor
-SRS830 = 0xC5 #photodetector/amplfier -> SRS830 AD input 2
+SRS830 = 0xC6 #photodetector/amplfier -> SRS830 AD input 1
 
 DELAY=0.2
 #standard delay between calls to the rs485 buss
@@ -93,6 +93,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument('stepsize', type=int, help='Polarimeter step size, ds. 1500/ds must be an integer')
 parser.add_argument('numrev',type=int,help='number of revolutions')
 parser.add_argument('dt',type=float,help='time to wait between data points for collection')
+parser.add_argument('norm',type=bool,help='normalize to x1?')
 parser.add_argument('comment',type=str,help='useful comment')
 
 args = parser.parse_args()
@@ -100,6 +101,7 @@ comment=args.comment
 stepsize=args.stepsize
 deltaT=args.dt
 numrevs=args.numrev
+norm=args.norm
 
 interface.rs485Devices.init()
 print("initialize steppermotor")
@@ -114,6 +116,11 @@ time.sleep(DELAY)
 #KeithleyInstruments.iniK485(K485RS485,K485GPIB)
 #time.sleep(DELAY)
 
+print("setting timeout")
+interface.rs485Devices.setRS485BridgeTimeout(SRS830,200)
+time.sleep(DELAY)
+
+
 print("initialize RS830")
 SRSinstruments.initSRS830(SRS830)
 time.sleep(DELAY)
@@ -122,6 +129,9 @@ returnstring=SRSinstruments.get_ID(SRS830)
 print("Found "+returnstring)
 
 filename = fileIO.calculateFilename('OP_') #auto filename
+
+
+
 
 # lets find home
 #print("Finding polarizer home")
@@ -136,7 +146,7 @@ print("take data")
 j=0
 LPangle=[]
 pmt=[]
-
+pdMonitor=[]
 phiangle=[]
 
 time.sleep(deltaT)
@@ -151,21 +161,25 @@ for j in range(0,numrevs*STEPSPERREV,stepsize):
 
 #	if (x1==0):
 #		time.sleep(DELAY)
-#		x1,x2,x3,x4 = SRSinstruments.getSRS830AuxIn(SRS830)
+	x1,x2,x3,x4 = SRSinstruments.getSRS830AuxIn(SRS830)
 	z,phi,f=SRSinstruments.getSRS830Data(SRS830)
 #	z=KeithleyInstruments.readK485(K485RS485,K485GPIB)
 	if (z==0):
 		time.sleep(DELAY)
 		z,phi,f=SRSinstruments.getSRS830Data(SRS830)
 	#	z=KeithleyInstruments.readK485(K485RS485,K485GPIB)
-
-	print("{}\t{}\t{}".format(j,z,phi))
+	z=z*1000000
+	print("{}\t{}\t{}\t{}".format(j,z,phi,x1))
 	LPangle.append(j)
-	pmt.append(z)
+	if norm:
+		pmt.append(z/x1)
+	else:
+		pmt.append(z)
 	phiangle.append(phi)
-
+	pdMonitor.append(x1)
 	interface.rs485Devices.moveRS485StepperMotor(DIGIDEVICE,stepsize,0)
 	time.sleep(deltaT)
+
 
 
 
@@ -179,8 +193,8 @@ print("{:.4}\t{:.4}\t{:.4}\t{:.4}\t{:.4}".format(a0/2,a2,b2,a4,b4))
 
 c2=math.sqrt(a2**2 + b2**2)
 theta2=math.atan2(b2,a2)*180.0/math.pi
-print("\nFourier coefficients cn Cos(nkx + phi_n)")
-print("A0/2\t\tC2\t\ttheta2")
+print("\nFourier coefficients cn Cos(nkx + n phi)")
+print("A0/2\t\tC2\t\t2*theta")
 print("{:.4}\t\t{:.4}\t\t{:.5}".format(a0/2,c2,theta2))
 
 #calculate noise variance
@@ -207,12 +221,12 @@ with open(filename,mode='w') as f:
 	f.write("A0,A2,B2,A4,B4\n")
 	f.write("{},{},{},{},{}\n".format(a0,a2,b2,a4,b4))
 	f.write("Fourier coefficients Cn Cos(nkx + phi_n)\n")
-	f.write("A0/2,C2,theta2\n")
+	f.write("A0/2,C2,2*theta\n")
 	f.write("{},{},{}\n".format(a0/2,c2,theta2))
 	f.write("STDEV=Sqrt(Sum[(xi - fit)^2]/(n-5)),{}\n".format(variance))
 	f.write("steps,intensity R,angle PHI\n")
 	for j in range(len(pmt)):
-		f.write("{},{},{}\n".format(LPangle[j],pmt[j],phiangle[j]))
+		f.write("{},{},{},{}\n".format(LPangle[j],pmt[j],phiangle[j],pdMonitor[j]))
 
 print("\nOK")
 interface.rs485Devices.stop()
