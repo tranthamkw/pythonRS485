@@ -7,7 +7,7 @@ import argparse
 import interface.rs485Devices
 
 DELAY=0
-DIGIDEVICE=0xD0
+DIGIDEVICE=0xD7
 HOMESTATE=1
 
 # this is a sand pit to test various things before wrapping into a dedicated main script#

@@ -84,6 +84,9 @@ with open(filename,mode='w') as f:
 	k=0
 	print("steps\tx1\tx2\tr1\tphi1\tf1\tr2\tphi2\tf2\n")
 
+
+#  x1 and x2 are the DC measurements of the photodetectors. x1 is the one on the stage. x2 is the normalization PD. 
+
 	while k<nstep:
 
 		# Now lets make the requested move
