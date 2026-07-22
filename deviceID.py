@@ -30,8 +30,9 @@ args = parser.parse_args()
 address=int(args.address,16)
 
 interface.rs485Devices.init()
+print("Requesting ID string from RS485 device 0x{:X}".format(address))
 
-print("Requesting ID string from RS485 device {}".format(hex(address)))
+#print("Requesting ID string from RS485 device {}".format(hex(address)))
 returnstring = interface.rs485Devices.IDstring(address)
 
 print("ID string: {}".format(returnstring))
