@@ -16,24 +16,26 @@ DIGIDEVICE=0xDA
 
 
 parser = argparse.ArgumentParser(
-        prog='scanSEE',
-        description='Scans KEPCO power supply from start to stop potential',
-        epilog="e.g. python scanSEE.py <start v> <end v> <step v>")
+        prog='testServo',
+        description='Sets servo position',
+        epilog="e.g. python testServo.py <servo> <pos>")
+parser.add_argument('address',type=str,help='the address in hex')
 parser.add_argument('servo', type=int, help='servo number 0 or 1')
 parser.add_argument('pos',type=int,help='position 0 to 8')
 
 args = parser.parse_args()
 servo = args.servo
 pos=args.pos
+address = int(args.address,16)
 
 z=0
 interface.rs485Devices.init()
 time.sleep(0.2)
 
-interface.rs485Devices.setRS485ServoPosition(DIGIDEVICE,servo,pos)
+interface.rs485Devices.setRS485ServoPosition(address,servo,pos)
 time.sleep(0.5)
 
-print(interface.rs485Devices.getRS485ServoPosition(DIGIDEVICE,servo))
+print(interface.rs485Devices.getRS485ServoPosition(address,servo))
 
 
 print("OK")
