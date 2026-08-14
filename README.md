@@ -14,6 +14,13 @@ Interface between python and Ken's RS485 boards.  Boards include:
 
 *) Steppermotor
 
+RUN FIRST:
+run listports.py 
+
+python listports.py
+
+to get the serial number of the USB/RS485 'dongle'.  This serial number must be inserted in /interfacing/port/py before trying to run any of this. 
+
 UTILITY scripts: 
 
 python deviceID.py XX     where XX is the hexidecimal address of a board returns the boards' function. This is useful to establish your are communicating with the correct device.
@@ -25,12 +32,11 @@ python manualGPIB.py is similar
 
 manualReadRTU.py and manualWriteRTU.py are advanced functions and normally would not be used by the casual user.
 
+LIBRARY SCRIPTS:
+
+interface/RS485devices.py. library for talking to di
+
+SRSinstruments.py has code specific to addressing some SRS instruments.
 
 
-Folder "interface" has lower level functions to talk to the RS485 bus.
 
-Instrument python files, e.g. SRSinstruments.py has code specific to addressing these instruments through ken'sRS485buss and boards.
-
-
-RUN FIRST:
-run listports.py to get the serial number of the USB/RS485 'dongle'.  This serial number must be inserted in /interfacing/port/py before trying to run any of this. 
