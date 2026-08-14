@@ -34,9 +34,11 @@ manualReadRTU.py and manualWriteRTU.py are advanced functions and normally would
 
 LIBRARY SCRIPTS:
 
-interface/RS485devices.py. library for talking to di
+interface/RS485devices.py. library for talking to digital boards, steppermotor controllers, etc
 
 SRSinstruments.py has code specific to addressing some SRS instruments.
+
+KeithleyInstruments.py has code specific to Keithly
 
 
 
