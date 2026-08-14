@@ -29,9 +29,13 @@ print("Command string: {}".format(cmdstr))
 
 returnstring=interface.rs485Devices.writeRS232(address, cmdstr,0x0D)
 
-print(returnstring)
+print("Returned data:")
 
-print("OK")
+clean_string=returnstring.replace("\r","\n")
+
+print(clean_string)
+
+print("\nDONE")
 interface.rs485Devices.stop()
 
 os._exit(0)

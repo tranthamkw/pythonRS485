@@ -226,7 +226,7 @@ def write_232_StringRTU(address,reg, writestring,terminator):
 		rtnData=readDevice()
 
 #		sys.stdout.write("Rx:")
-		#printmybyte(rtnData)
+#		printmybyte(rtnData)
 #		sys.stdout.write("{}".format(rtnData))
 #		sys.stdout.write("\n")
 
