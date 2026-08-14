@@ -19,7 +19,7 @@ run listports.py
 
 python listports.py
 
-to get the serial number of the USB/RS485 'dongle'.  This serial number must be inserted in /interfacing/port/py before trying to run any of this. 
+to get the serial number of the USB/RS485 'dongle'.  This serial number must be inserted in /interfacing/port.py before trying to run any of this. 
 
 UTILITY scripts: 
 
