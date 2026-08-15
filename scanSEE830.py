@@ -8,7 +8,6 @@ import os
 
 import interface.rs485Devices
 import SRSinstruments
-
 import KeithleyInstruments
 
 import fileIO  # There is an 'automatic' file-namer, based on time of day. There MUST be a ~/data directory
@@ -32,8 +31,8 @@ DELAY=0.1
 
 parser = argparse.ArgumentParser(
 	prog='scanSEE',
-	description='Scans KEPCO power supply from start to stop potential. Records data from lockin SRS530 lockin.',
-	epilog="e.g. python scanSEE.py <start v> <end v> <step v>")
+	description='Scans SRS830 analog out from start to stop potential. Records data from lockin .',
+	epilog="e.g. python scanSEE830.py <start v> <end v> <step v>")
 parser.add_argument('startv', type=float, help='start volts')
 parser.add_argument('endv', type=float, help='end volts')
 parser.add_argument('stepv',type = float, help='step volts')
@@ -60,13 +59,13 @@ timeout=interface.rs485Devices.getRS485BridgeTimeout(SRS830)
 time.sleep(DELAY)
 print("Current timeout {}".format(timeout))
 
-print("Setting timeout to 32")
-interface.rs485Devices.setRS485BridgeTimeout(SRS830,32)
-time.sleep(DELAY)
+#print("Setting timeout to 32")
+#interface.rs485Devices.setRS485BridgeTimeout(SRS830,32)
+#time.sleep(DELAY)
 
-timeout=interface.rs485Devices.getRS485BridgeTimeout(SRS830)
-time.sleep(DELAY)
-print("New timeout {}".format(timeout))
+#timeout=interface.rs485Devices.getRS485BridgeTimeout(SRS830)
+#time.sleep(DELAY)
+#print("New timeout {}".format(timeout))
 
 
 
@@ -80,11 +79,11 @@ print("start data acq")
 print('setv,x1,x2,x3,x4,r2,phi2,f')
 while k<numloops:
 	setv = startv + float(k)*stepv
-#	outv=(setv - KEPCO_GAIN_B)/KEPCO_GAIN_M
 	print("setv")
 	SRSinstruments.setSRS830AD(SRS830,2,setv)
 	time.sleep(DELAY)
 	print("get AD inputs")
+
 #	the following is supposed to be faster than individual calls 
 	x1,x2,x3,x4 = SRSinstruments.getSRS830AuxIn(SRS830)
 	"""

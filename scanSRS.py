@@ -10,8 +10,14 @@ import SRSinstruments
 import fileIO
 SRS830 = 0xC6
 SRS530 = 0xC5
-
 SRS335 = 0xC0
+"""
+
+THIS PROGRAM IS USED ON THE PIEZO APPARATUS
+
+
+"""
+
 #															#
 # ++++++++++++++++++++	START MAIN +++++++++++++++++++++++#
 #															#

@@ -18,15 +18,17 @@ BASEREGSERVO= 0x0A0A  #also base register for  general purpose digital
 # +0,+1 servo 0 and servo 1
 BASEREG485BRIDGE232= 0x0C0C
 # +32 GPIB
+# +4 debugprint
+# +2 timeout
 BASEREGSTEPMTR= 0x0B0B
-BASEAUTOBATT=0X0A2A	#<<<---NEW
+BASEAUTOBATT=0X0A2A
 BASEREGFN= 0x00F0
 
 
-battery=[]		#<<<---NEW
+battery=[]
 
 """															#
- interface layer between main (for my digital or analog board),
+ interface layer between main programs (for my digital or analog board),
  or instrument layers(with RS232 or GPIB bridge devices) with usb/RS485 bridge#
 															#
 """
@@ -35,7 +37,7 @@ battery=[]		#<<<---NEW
 #	Analog in board
 #	Steppermotor board
 #	Servo board (done)
-#	RS232 bridge (done-ish)
+#	RS232 bridge (done)
 #	GPIB bridge (done)
 
 
@@ -52,8 +54,8 @@ Also, the following (init and stop) should only be called once in main
 # called at the start of a main
 def init():
 
-	for j in range(9):			#<<<---NEW
-		battery.append(2**j-1)		#<<<---NEW
+	for j in range(9):
+		battery.append(2**j-1) # this is a needed array for interfacing with the battery box device
 	interface.usbRS485bridge.start()
 
 # call this at the end/exit of a main
@@ -82,15 +84,13 @@ def changeAddress(old,new):
 	# For pic's programmed after 4/25
 	#consoldating code for the RS485 project puts new address at both [4] and [5]
 	"""
-	one needs to know that old address for this to work.  if we dont know the address of the 
-	board, then hold the 'address-program' button down and use deviceID.py. The board will remember
+	DEPRECIATED
+	
+	hold the 'address-program' button down and use deviceID.py. The board will remember
 	the address used as it's own
 
-	This function is inteded to be used in code,AND USED CAREFULLY! Do not change a board's
-	address to another address which belongs to another board.
 	"""
-	y=interface.usbRS485bridge.write_Modbus_RTU(old,0xFF,new)
-	return y
+	return 0;
 
 """
 				RELAY BATTERY BOX
@@ -302,15 +302,32 @@ def getRS485BridgeTimeout(Address):
 #	debug
 #	interface.usbRS485bridge.printmybyte(returndata)
 	timeout=0
-	if (y==0)and len(returndata)==2:
+	if (y==0) and len(returndata)==2:
 		timeout=(returndata[0]<<8 | returndata[1])
 	else:
 		print("error in get BridgeTimeout")
 
 	return timeout
 
+def getRS485BridgeDBP(Address):
+
+	y,returndata=interface.usbRS485bridge.read_Modbus_RTU(Address,BASEREG485BRIDGE232+4)
+#	debug
+#	interface.usbRS485bridge.printmybyte(returndata)
+	timeout=0
+	if (y==0)and len(returndata)==2:
+		timeout=(returndata[0]<<8 | returndata[1])
+	else:
+		print("error in get debug print")
+
+	return timeout
+
 def setRS485BridgeTimeout(Address,timeout):
 	status = interface.usbRS485bridge.write_Modbus_RTU(Address,BASEREG485BRIDGE232+2,timeout)
+	return status
+
+def setRS485BridgeDBP(Address,timeout):
+	status = interface.usbRS485bridge.write_Modbus_RTU(Address,BASEREG485BRIDGE232+4,timeout)
 	return status
 
 

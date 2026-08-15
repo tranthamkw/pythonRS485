@@ -383,6 +383,9 @@ def read_Modbus_RTU(address,reg):
 	bridge.write(cmd)
 	returndata=readDevice()
 
+#	sys.stdout.write("Rx: ")
+#	printmybyte(returndata)
+
 	z=-1	# //my way of recording errors
 	tempint=[]
 	if len(returndata)>0:
@@ -391,7 +394,7 @@ def read_Modbus_RTU(address,reg):
 			if(returndata[0]==cmd[0]): # //  the correct machine responded
 				if(returndata[1] & 0x80): #  an error occured
 					z=(returndata[2]<<8)|returndata[3] #the nature of the error is returned here
-					print("error returnded")
+					print("error returnded {}".format(z))
 				else: # all good(see below)
 					tempint=returndata[3:-2]
 					z=0;

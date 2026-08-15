@@ -2,17 +2,30 @@
 #mcamain.py
 import sys
 import time
-#import serial
-#import port
 import re
 import argparse
 import os
-#import threading
-#from datetime import datetime
 
 import interface.rs485Devices
 
-#import globalVars
+
+"""
+used to check connection to a known device.
+
+ALSO used to program a device's address. To set the device's address, press the button
+on the board - leave it pressed and run this code. e.g.
+
+python deviceID.py XX
+
+where XX is the hexidecimal address you want to use. (Make sure no other board is using this
+address).  Valid address are 00 through FF
+
+let go the button. The device will remember this address.
+
+
+
+"""
+
 
 
 #															#

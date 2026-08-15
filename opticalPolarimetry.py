@@ -13,19 +13,27 @@ import KeithleyInstruments
 import fileIO  # There is an 'automatic' file-namer, based on time of day. There MUST be a ~/data directory
 # on the raspi
 
+"""
+steps a stepper-motor driven optical element such as a linear polarizer. collects data from SRS830
+
+could use keithly picoammeter instead.
+
+"""
 
 DIGIDEVICE=0xD0 # the steppermotor
-SRS830 = 0xC6 #photodetector/amplfier -> SRS830 AD input 1
+SRS830 = 0xC6 # photodetector/amplfier -> SRS830 AD input 1
 
 DELAY=0.2
 #standard delay between calls to the rs485 buss
+
+
 HOMESTATE=1
 STEPSPERREV=1500
-
 #STEPSPERREV / STEPSIZE must be an integer, otherwise we will rotate more than one rev
 
 ## these instruments need both the RS485bridge address, and , since GPIB is addressable, we have
 ## to set the appropriate GPIB address.
+
 K485GPIB=10
 K485RS485=0xC3
 
@@ -87,7 +95,7 @@ def findHome(address,l,dx,hs):
 
 
 parser = argparse.ArgumentParser(
-        prog='opticalRotation',
+        prog='opticalPolarimetry',
         description='collect intensity data for a full rotation',
         epilog="e.g. python examplePolarimetry")
 parser.add_argument('stepsize', type=int, help='Polarimeter step size, ds. 1500/ds must be an integer')
@@ -116,10 +124,6 @@ time.sleep(DELAY)
 #KeithleyInstruments.iniK485(K485RS485,K485GPIB)
 #time.sleep(DELAY)
 
-print("setting timeout")
-interface.rs485Devices.setRS485BridgeTimeout(SRS830,200)
-time.sleep(DELAY)
-
 
 print("initialize RS830")
 SRSinstruments.initSRS830(SRS830)
@@ -133,9 +137,10 @@ filename = fileIO.calculateFilename('OP_') #auto filename
 
 
 
-# lets find home
-#print("Finding polarizer home")
-#findHome(DIGIDEVICE,STEPSPERREV,stepsize,HOMESTATE)
+# lets find home.  Uncomment to use.  typically, i only home the device once per day or when we know
+# the optic is not homed. ALSO, the steppermotor/optical system must have a home detector of some kind.
+# print("Finding polarizer home")
+# findHome(DIGIDEVICE,STEPSPERREV,stepsize,HOMESTATE)
 
 interface.rs485Devices.setRS485StepperMotorSpeed(DIGIDEVICE,20)
 time.sleep(DELAY)
