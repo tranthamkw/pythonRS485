@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser(
 	description='sets time out for a RS485-RS232 bridge',
 	epilog="e.g. python settimeout.py <time> <1,0>")
 parser.add_argument('address',type=str,help='address')
-parser.add_argument('thyme', type=int, help='time')
+parser.add_argument('thyme', type=int, help='time-out in ms')
 parser.add_argument('debugprint', type=int, help='set debug print')
 
 args = parser.parse_args()
@@ -30,8 +30,12 @@ address=int(args.address,16)
 t = args.thyme
 dbp=args.debugprint
 
-#do not name a variable 'time'. this is reserved
+"""
 
+NEVER name a variable 'time'. this is reserved. an
+
+
+"""
 interface.rs485Devices.init()
 
 
